@@ -1,0 +1,42 @@
+---
+# Deployment of our statistics-service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: statistics-service
+  namespace: keptn
+spec:
+  selector:
+    matchLabels:
+      run: statistics-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: statistics-service
+    spec:
+      containers:
+        - name: statistics-service
+          image: keptnsandbox/statistics-service:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: EVENTBROKER
+              value: 'http://event-broker/keptn'
+            - name: CONFIGURATION_SERVICE
+              value: 'http://configuration-service:8080'
+---
+# Expose statistics-service via Port 8080 within the cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: statistics-service
+  namespace: keptn
+  labels:
+    run: statistics-service
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+  selector:
+    run: statistics-service

@@ -1,0 +1,18 @@
+basePath: /v1
+info:
+  contact:
+    name: Keptn Team
+    url: http://www.keptn.sh
+  description: This is the API documentation of the Shipyard Controller.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Shipyard Controller API
+  version: "1.0"
+paths: {}
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: x-token
+    type: apiKey
+swagger: "2.0"
