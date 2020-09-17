@@ -21,10 +21,8 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: EVENTBROKER
-              value: 'http://event-broker/keptn'
-            - name: CONFIGURATION_SERVICE
-              value: 'http://configuration-service:8080'
+            - name: AGGREGATION_INTERVAL_MINUTES
+              value: '30'
 ---
 # Expose statistics-service via Port 8080 within the cluster
 apiVersion: v1

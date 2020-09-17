@@ -30,7 +30,206 @@ var doc = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {},
+    "paths": {
+        "/event": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Handle incoming cloud event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Handle event",
+                "parameters": [
+                    {
+                        "description": "Event type",
+                        "name": "event",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/operations.Event"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok"
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "get statistics about Keptn installation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Statistics"
+                ],
+                "summary": "Get statistics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "From",
+                        "name": "from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "To",
+                        "name": "to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Statistics"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/operations.Error"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "operations.Error": {
+            "type": "object",
+            "properties": {
+                "errorCode": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "operations.Event": {
+            "type": "object",
+            "properties": {
+                "contenttype": {
+                    "type": "string"
+                },
+                "data": {
+                    "type": "object"
+                },
+                "extensions": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "shkeptncontext": {
+                    "type": "string"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "specversion": {
+                    "type": "string"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "triggeredid": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "operations.Project": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/operations.Service"
+                    }
+                }
+            }
+        },
+        "operations.Service": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "integer"
+                    }
+                },
+                "executedSequences": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "operations.Statistics": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "projects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/operations.Project"
+                    }
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        }
+    },
     "securityDefinitions": {
         "ApiKeyAuth": {
             "type": "apiKey",
@@ -55,8 +254,8 @@ var SwaggerInfo = swaggerInfo{
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},
-	Title:       "Shipyard Controller API",
-	Description: "This is the API documentation of the Shipyard Controller.",
+	Title:       "Statistics Service API",
+	Description: "This is the API documentation of the Statistics Service.",
 }
 
 type s struct{}
