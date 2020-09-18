@@ -62,3 +62,20 @@ func (s *Statistics) IncreaseExecutedSequencesCount(projectName, serviceName str
 	service := s.Projects[projectName].Services[serviceName]
 	service.ExecutedSequences = service.ExecutedSequences + increment
 }
+
+// MergeStatistics godoc
+func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
+	for _, stats := range statistics {
+		for projectName, project := range stats.Projects {
+			for serviceName, service := range project.Services {
+				for eventType, count := range service.Events {
+					target.IncreaseEventTypeCount(projectName, serviceName, eventType, count)
+				}
+				if service.ExecutedSequences > 0 {
+					target.IncreaseExecutedSequencesCount(projectName, serviceName, service.ExecutedSequences)
+				}
+			}
+		}
+	}
+	return target
+}
