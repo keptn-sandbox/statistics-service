@@ -1,6 +1,7 @@
 package operations
 
 import (
+	"github.com/go-test/deep"
 	"testing"
 	"time"
 )
@@ -267,6 +268,132 @@ func TestStatistics_IncreaseEventTypeCount(t *testing.T) {
 			result := s.Projects[tt.args.projectName].Services[tt.args.serviceName].Events[tt.args.eventType]
 			if result != tt.wantResult {
 				t.Errorf("Statistics.IncreaseEventTypeCount(): want %d, got %d", tt.wantResult, result)
+			}
+		})
+	}
+}
+
+func TestMergeStatistics(t *testing.T) {
+	type args struct {
+		target     Statistics
+		statistics []Statistics
+	}
+	tests := []struct {
+		name string
+		args args
+		want Statistics
+	}{
+		{
+			name: "mege statistics",
+			args: args{
+				target: Statistics{
+					From:     time.Time{},
+					To:       time.Time{},
+					Projects: nil,
+				},
+				statistics: []Statistics{
+					{
+						From: time.Time{},
+						To:   time.Time{},
+						Projects: map[string]*Project{
+							"my-project": {
+								Name: "my-project",
+								Services: map[string]*Service{
+									"my-service": {
+										Name:              "my-service",
+										ExecutedSequences: 2,
+										Events: map[string]int{
+											"my-type": 1,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						From: time.Time{},
+						To:   time.Time{},
+						Projects: map[string]*Project{
+							"my-project": {
+								Name: "my-project",
+								Services: map[string]*Service{
+									"my-service": {
+										Name:              "my-service",
+										ExecutedSequences: 2,
+										Events: map[string]int{
+											"my-type":   1,
+											"my-type-2": 1,
+										},
+									},
+								},
+							},
+						},
+					},
+					{
+						From: time.Time{},
+						To:   time.Time{},
+						Projects: map[string]*Project{
+							"my-project-2": {
+								Name: "my-project-2",
+								Services: map[string]*Service{
+									"my-service-2": {
+										Name:              "my-service-2",
+										ExecutedSequences: 2,
+										Events: map[string]int{
+											"my-type":   2,
+											"my-type-2": 1,
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			want: Statistics{
+				From: time.Time{},
+				To:   time.Time{},
+				Projects: map[string]*Project{
+					"my-project": {
+						Name: "my-project",
+						Services: map[string]*Service{
+							"my-service": {
+								Name:              "my-service",
+								ExecutedSequences: 4,
+								Events: map[string]int{
+									"my-type":   2,
+									"my-type-2": 1,
+								},
+							},
+						},
+					},
+					"my-project-2": {
+						Name: "my-project-2",
+						Services: map[string]*Service{
+							"my-service-2": {
+								Name:              "my-service-2",
+								ExecutedSequences: 2,
+								Events: map[string]int{
+									"my-type":   2,
+									"my-type-2": 1,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := MergeStatistics(tt.args.target, tt.args.statistics)
+
+			diff := deep.Equal(got, tt.want)
+			if len(diff) > 0 {
+				t.Error("MergeStatistics(): did not return expected value")
+				for _, d := range diff {
+					t.Log(d)
+				}
 			}
 		})
 	}

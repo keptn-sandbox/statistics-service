@@ -48,7 +48,7 @@ func GetStatistics(c *gin.Context) {
 	if params.From.After(cutoffTime) {
 		// case 1: time frame within "in-memory" interval (e.g. last 30 minutes)
 		// -> return in-memory object
-		payload = sb.Statistics
+		payload = *sb.Statistics
 
 	} else {
 		var statistics []operations.Statistics
@@ -81,33 +81,17 @@ func GetStatistics(c *gin.Context) {
 				})
 				return
 			}
-			statistics = append(statistics, sb.Statistics)
+			statistics = append(statistics, *sb.Statistics)
 		}
 
 		payload = operations.Statistics{
 			From: params.From,
 			To:   params.To,
 		}
-		payload = mergeStatistics(payload, statistics)
+		payload = operations.MergeStatistics(payload, statistics)
 	}
 
 	c.JSON(http.StatusOK, payload)
-}
-
-func mergeStatistics(target operations.Statistics, statistics []operations.Statistics) operations.Statistics {
-	for _, stats := range statistics {
-		for projectName, project := range stats.Projects {
-			for serviceName, service := range project.Services {
-				for eventType, count := range service.Events {
-					target.IncreaseEventTypeCount(projectName, serviceName, eventType, count)
-				}
-				if service.ExecutedSequences > 0 {
-					target.IncreaseExecutedSequencesCount(projectName, serviceName, service.ExecutedSequences)
-				}
-			}
-		}
-	}
-	return target
 }
 
 func stringp(s string) *string {
