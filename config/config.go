@@ -7,7 +7,7 @@ import (
 
 // EnvConfig godoc
 type EnvConfig struct {
-	AggregationIntervalMinutes int `envconfig:"AGGREGATION_INTERVAL_MINUTES" default:30`
+	AggregationIntervalMinutes int `envconfig:"AGGREGATION_INTERVAL_MINUTES" default:"30""`
 }
 
 var env EnvConfig

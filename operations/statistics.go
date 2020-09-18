@@ -30,7 +30,7 @@ type Service struct {
 	Events            map[string]int `json:"events" bson:"events"`
 }
 
-func (s Statistics) ensureProjectAndServiceExist(projectName string, serviceName string) {
+func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceName string) {
 	if s.Projects == nil {
 		s.Projects = map[string]*Project{}
 	}
@@ -50,14 +50,14 @@ func (s Statistics) ensureProjectAndServiceExist(projectName string, serviceName
 }
 
 // IncreaseEventTypeCount godoc
-func (s Statistics) IncreaseEventTypeCount(projectName, serviceName, eventType string, increment int) {
+func (s *Statistics) IncreaseEventTypeCount(projectName, serviceName, eventType string, increment int) {
 	s.ensureProjectAndServiceExist(projectName, serviceName)
 	service := s.Projects[projectName].Services[serviceName]
 	service.Events[eventType] = service.Events[eventType] + increment
 }
 
 // IncreaseExecutedSequencesCount godoc
-func (s Statistics) IncreaseExecutedSequencesCount(projectName, serviceName string, increment int) {
+func (s *Statistics) IncreaseExecutedSequencesCount(projectName, serviceName string, increment int) {
 	s.ensureProjectAndServiceExist(projectName, serviceName)
 	service := s.Projects[projectName].Services[serviceName]
 	service.ExecutedSequences = service.ExecutedSequences + increment

@@ -14,7 +14,7 @@ var statisticsBucketInstance *statisticsBucket
 
 type statisticsBucket struct {
 	StatisticsRepo  db.StatisticsRepo
-	Statistics      operations.Statistics
+	Statistics      *operations.Statistics
 	bucketTimer     *time.Ticker
 	uniqueSequences map[string]bool
 	logger          keptn.LoggerInterface
@@ -35,7 +35,7 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 		go func() {
 			for {
 				<-statisticsBucketInstance.bucketTimer.C
-				statisticsBucketInstance.logger.Info(fmt.Sprintf("%n minutes have passed. Creating a new statistics bucket\n", env.AggregationIntervalMinutes))
+				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d minutes have passed. Creating a new statistics bucket\n", env.AggregationIntervalMinutes))
 				statisticsBucketInstance.storeCurrentBucket()
 				statisticsBucketInstance.createNewBucket()
 			}
@@ -53,7 +53,7 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	defer sb.lock.Unlock()
 
 	sb.logger.Info("updating statistics for service " + event.Data.Service + " in project " + event.Data.Project)
-	increaseExecutedSequences := sb.uniqueSequences[event.Shkeptncontext]
+	increaseExecutedSequences := !sb.uniqueSequences[event.Shkeptncontext]
 	sb.uniqueSequences[event.Shkeptncontext] = true
 
 	sb.Statistics.IncreaseEventTypeCount(event.Data.Project, event.Data.Service, event.Type, 1)
@@ -66,7 +66,7 @@ func (sb *statisticsBucket) storeCurrentBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 	sb.logger.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
-	if err := sb.StatisticsRepo.StoreStatistics(sb.Statistics); err != nil {
+	if err := sb.StatisticsRepo.StoreStatistics(*sb.Statistics); err != nil {
 		sb.logger.Error(fmt.Sprintf("Could not store statistics: " + err.Error()))
 	}
 	sb.logger.Info(fmt.Sprintf("Statistics stored successfully"))
@@ -77,7 +77,7 @@ func (sb *statisticsBucket) createNewBucket() {
 	defer sb.lock.Unlock()
 	sb.cutoffTime = time.Now()
 	sb.uniqueSequences = map[string]bool{}
-	sb.Statistics = operations.Statistics{
+	sb.Statistics = &operations.Statistics{
 		From: time.Now(),
 	}
 }
