@@ -30,12 +30,12 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 			logger:         keptn.NewLogger("", "", "statistics service"),
 		}
 
-		statisticsBucketInstance.bucketTimer = time.NewTicker(time.Duration(env.AggregationIntervalMinutes) * time.Minute)
+		statisticsBucketInstance.bucketTimer = time.NewTicker(time.Duration(env.AggregationIntervalSeconds) * time.Second)
 		statisticsBucketInstance.createNewBucket()
 		go func() {
 			for {
 				<-statisticsBucketInstance.bucketTimer.C
-				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d minutes have passed. Creating a new statistics bucket\n", env.AggregationIntervalMinutes))
+				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d minutes have passed. Creating a new statistics bucket\n", env.AggregationIntervalSeconds))
 				statisticsBucketInstance.storeCurrentBucket()
 				statisticsBucketInstance.createNewBucket()
 			}
@@ -66,6 +66,7 @@ func (sb *statisticsBucket) storeCurrentBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 	sb.logger.Info(fmt.Sprintf("Storing statistics for time frame %s - %s\n\n", sb.Statistics.From.String(), sb.Statistics.To.String()))
+	sb.Statistics.To = time.Now().Round(time.Second)
 	if err := sb.StatisticsRepo.StoreStatistics(*sb.Statistics); err != nil {
 		sb.logger.Error(fmt.Sprintf("Could not store statistics: " + err.Error()))
 	}
@@ -75,9 +76,9 @@ func (sb *statisticsBucket) storeCurrentBucket() {
 func (sb *statisticsBucket) createNewBucket() {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
-	sb.cutoffTime = time.Now()
+	sb.cutoffTime = time.Now().Round(time.Second)
 	sb.uniqueSequences = map[string]bool{}
 	sb.Statistics = &operations.Statistics{
-		From: time.Now(),
+		From: time.Now().Round(time.Second),
 	}
 }

@@ -5,6 +5,8 @@ import (
 	"github.com/keptn-sandbox/statistics-service/db"
 	"github.com/keptn-sandbox/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"os"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -397,5 +399,102 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestStatisticsBucket(t *testing.T) {
+	interval := 5
+	os.Setenv("AGGREGATION_INTERVAL_SECONDS", strconv.FormatInt(int64(interval), 10))
+
+	expectedStatistics := &operations.Statistics{
+		From: time.Time{},
+		To:   time.Time{},
+		Projects: map[string]*operations.Project{
+			"my-project": {
+				Name: "my-project",
+				Services: map[string]*operations.Service{
+					"my-service": {
+						Name:              "my-service",
+						ExecutedSequences: 2,
+						Events: map[string]int{
+							"my-type":   2,
+							"my-type-2": 1,
+						},
+					},
+				},
+			},
+		},
+	}
+	stored := make(chan bool)
+	sb := GetStatisticsBucketInstance()
+	sb.StatisticsRepo = &MockStatisticsRepo{
+		GetStatisticsFunc: nil,
+		StoreStatisticsFunc: func(statistics operations.Statistics) error {
+			// Check time frame
+
+			// Round values to second to make comparison easier
+			statistics.From = statistics.From.Round(time.Second)
+			statistics.To = statistics.To.Round(time.Second)
+
+			// calculate upper and lower bound for "to" timestamp, based on the "start" timestamp
+			lowerIntervalBound := time.Duration(interval - 2)
+			upperIntervalBound := time.Duration(interval + 2)
+			lowerBound := statistics.From.Add(lowerIntervalBound * time.Second)
+			upperBound := statistics.From.Add(upperIntervalBound * time.Second)
+
+			t.Logf("Check if Statistics.To lies within %v and %v", lowerBound, upperBound)
+			if !statistics.To.After(lowerBound) || !statistics.To.Before(upperBound) {
+				t.Errorf("Statistics timeframe does not have expected value of %d seconds. From = %v; To = %v", interval, statistics.From, statistics.To)
+			}
+
+			expectedStatistics.From = sb.GetCutoffTime().Round(time.Second)
+
+			statistics.To = time.Time{}
+			diff := deep.Equal(statistics, *expectedStatistics)
+			if len(diff) > 0 {
+				t.Error("did not receive expected Statistics")
+				for _, d := range diff {
+					t.Log(d)
+				}
+			}
+			stored <- true
+			return nil
+		},
+		DeleteStatisticsFunc: nil,
+	}
+
+	sb.AddEvent(operations.Event{
+		Data: operations.KeptnBase{
+			Project: "my-project",
+			Service: "my-service",
+		},
+		Shkeptncontext: "my-context",
+		Type:           "my-type",
+	})
+
+	sb.AddEvent(operations.Event{
+		Data: operations.KeptnBase{
+			Project: "my-project",
+			Service: "my-service",
+		},
+		Shkeptncontext: "my-context",
+		Type:           "my-type-2",
+	})
+
+	sb.AddEvent(operations.Event{
+		Data: operations.KeptnBase{
+			Project: "my-project",
+			Service: "my-service",
+		},
+		Shkeptncontext: "my-context-2",
+		Type:           "my-type",
+	})
+
+	select {
+	case <-time.After(6 * time.Second):
+		t.Error("StatisticsBucket has not been stored")
+		return
+	case <-stored:
+		break
 	}
 }
