@@ -20,7 +20,7 @@ import (
 // @Failure 500 {object} operations.Error "Internal error"
 // @Router /event [post]
 func HandleEvent(c *gin.Context) {
-	event := operations.Event{}
+	event := &operations.Event{}
 	if err := c.ShouldBindJSON(event); err != nil {
 		c.JSON(http.StatusBadRequest, operations.Error{
 			ErrorCode: 400,
@@ -30,7 +30,7 @@ func HandleEvent(c *gin.Context) {
 
 	sb := controller.GetStatisticsBucketInstance()
 
-	sb.AddEvent(event)
+	sb.AddEvent(*event)
 
 	c.Status(http.StatusOK)
 }
