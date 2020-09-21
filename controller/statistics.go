@@ -6,6 +6,7 @@ import (
 	"github.com/keptn-sandbox/statistics-service/db"
 	"github.com/keptn-sandbox/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
+	"strings"
 	"sync"
 	"time"
 )
@@ -67,6 +68,9 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()
 
+	if event.Data.Project == "" || event.Data.Service == "" || event.Type == "" || event.Source == "" {
+		return
+	}
 	sb.logger.Info("updating statistics for service " + event.Data.Service + " in project " + event.Data.Project)
 	increaseExecutedSequences := !sb.uniqueSequences[event.Shkeptncontext]
 	sb.uniqueSequences[event.Shkeptncontext] = true
@@ -77,8 +81,22 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	}
 	if sb.nextGenEvents {
 		// increase service execution count using .started events
+		if strings.HasSuffix(event.Type, ".started") {
+			sb.Statistics.IncreaseKeptnServiceExecutionCount(
+				event.Data.Project,
+				event.Data.Service,
+				event.Source,
+				strings.TrimSuffix(event.Type, ".started"), 1,
+			)
+		}
 	} else {
 		// increase service execution count using 'source' property from event
+		sb.Statistics.IncreaseKeptnServiceExecutionCount(
+			event.Data.Project,
+			event.Data.Service,
+			event.Source,
+			event.Type, 1,
+		)
 	}
 }
 

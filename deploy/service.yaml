@@ -23,6 +23,8 @@ spec:
           env:
             - name: AGGREGATION_INTERVAL_MINUTES
               value: '30'
+            - name: NEXT_GEN_EVENTS
+              value: 'false'
 ---
 # Expose statistics-service via Port 8080 within the cluster
 apiVersion: v1

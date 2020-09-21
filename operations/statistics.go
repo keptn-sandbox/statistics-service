@@ -6,39 +6,74 @@ import (
 
 // GetStatisticsParams godoc
 type GetStatisticsParams struct {
+	// From godoc
 	From time.Time `form:"from" json:"from" time_format:"unix"`
-	To   time.Time `form:"to" json:"to" time_format:"unix"`
+	// To godoc
+	To time.Time `form:"to" json:"to" time_format:"unix"`
 }
 
 // Statistics godoc
 type Statistics struct {
-	From     time.Time           `json:"from" bson:"from"`
-	To       time.Time           `json:"to" bson:"to"`
+	// From godoc
+	From time.Time `json:"from" bson:"from"`
+	// To godoc
+	To time.Time `json:"to" bson:"to"`
+	// Projects godoc
 	Projects map[string]*Project `json:"projects" bson:"projects"`
 }
 
 // Project godoc
 type Project struct {
-	Name     string              `json:"name" bson:"name"`
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// Services godoc
 	Services map[string]*Service `json:"services" bson:"services"`
 }
 
 // Service godoc
 type Service struct {
-	Name                   string         `json:"name" bson:"name"`
-	ExecutedSequences      int            `json:"executedSequences" bson:"executedSequences"`
-	Events                 map[string]int `json:"events" bson:"events"`
-	KeptnServiceExecutions map[string]int `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// ExecutedSequences godoc
+	ExecutedSequences int `json:"executedSequences" bson:"executedSequences"`
+	// Events godoc
+	Events map[string]int `json:"events" bson:"events"`
+	// KeptnServiceExecutions godoc
+	KeptnServiceExecutions map[string]*KeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+}
+
+// KeptnService godoc
+type KeptnService struct {
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// Executions godoc
+	Executions map[string]int `json:"executions" bson:"executions"`
 }
 
 func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceName string) {
 	s.ensureProjectExists(projectName)
+	if s.Projects[projectName].Services == nil {
+		s.Projects[projectName].Services = map[string]*Service{}
+	}
 	if s.Projects[projectName].Services[serviceName] == nil {
 		s.Projects[projectName].Services[serviceName] = &Service{
 			Name:                   serviceName,
 			ExecutedSequences:      0,
 			Events:                 map[string]int{},
-			KeptnServiceExecutions: map[string]int{},
+			KeptnServiceExecutions: map[string]*KeptnService{},
+		}
+	}
+}
+
+func (s *Statistics) ensureKeptnServiceExists(projectName, serviceName, keptnServiceName string) {
+	s.ensureProjectAndServiceExist(projectName, serviceName)
+	if s.Projects[projectName].Services[serviceName].KeptnServiceExecutions == nil {
+		s.Projects[projectName].Services[serviceName].KeptnServiceExecutions = map[string]*KeptnService{}
+	}
+	if s.Projects[projectName].Services[serviceName].KeptnServiceExecutions[keptnServiceName] == nil {
+		s.Projects[projectName].Services[serviceName].KeptnServiceExecutions[keptnServiceName] = &KeptnService{
+			Name:       keptnServiceName,
+			Executions: map[string]int{},
 		}
 	}
 }
@@ -70,10 +105,11 @@ func (s *Statistics) IncreaseExecutedSequencesCount(projectName, serviceName str
 }
 
 // IncreaseKeptnServiceExecutionCount godoc
-func (s *Statistics) IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName string, increment int) {
+func (s *Statistics) IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName, eventType string, increment int) {
 	s.ensureProjectAndServiceExist(projectName, serviceName)
-	service := s.Projects[projectName].Services[serviceName]
-	service.KeptnServiceExecutions[keptnServiceName] = service.KeptnServiceExecutions[keptnServiceName] + increment
+	s.ensureKeptnServiceExists(projectName, serviceName, keptnServiceName)
+	keptnService := s.Projects[projectName].Services[serviceName].KeptnServiceExecutions[keptnServiceName]
+	keptnService.Executions[eventType] = keptnService.Executions[eventType] + increment
 }
 
 // MergeStatistics godoc
@@ -87,6 +123,11 @@ func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
 				}
 				if service.ExecutedSequences > 0 {
 					target.IncreaseExecutedSequencesCount(projectName, serviceName, service.ExecutedSequences)
+				}
+				for keptnServiceName, keptnService := range service.KeptnServiceExecutions {
+					for eventType, count := range keptnService.Executions {
+						target.IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName, eventType, count)
+					}
 				}
 			}
 		}
