@@ -222,6 +222,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					},
 					Shkeptncontext: "my-context",
 					Type:           "my-type",
+					Source:         "my-keptn-service",
 				},
 			},
 			expectedStatistics: &operations.Statistics{
@@ -237,7 +238,14 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 								Events: map[string]int{
 									"my-type": 1,
 								},
-								KeptnServiceExecutions: map[string]int{},
+								KeptnServiceExecutions: map[string]*operations.KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-type": 1,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -264,7 +272,14 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 									Events: map[string]int{
 										"my-type": 1,
 									},
-									KeptnServiceExecutions: map[string]int{},
+									KeptnServiceExecutions: map[string]*operations.KeptnService{
+										"my-keptn-service": {
+											Name: "my-keptn-service",
+											Executions: map[string]int{
+												"my-type": 1,
+											},
+										},
+									},
 								},
 							},
 						},
@@ -284,6 +299,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					},
 					Shkeptncontext: "my-context",
 					Type:           "my-type",
+					Source:         "my-keptn-service",
 				},
 			},
 			expectedStatistics: &operations.Statistics{
@@ -299,7 +315,14 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 								Events: map[string]int{
 									"my-type": 2,
 								},
-								KeptnServiceExecutions: map[string]int{},
+								KeptnServiceExecutions: map[string]*operations.KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-type": 2,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -347,6 +370,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					},
 					Shkeptncontext: "my-context",
 					Type:           "my-type",
+					Source:         "my-keptn-service",
 				},
 			},
 			expectedStatistics: &operations.Statistics{
@@ -361,6 +385,14 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 								ExecutedSequences: 1,
 								Events: map[string]int{
 									"my-type": 2,
+								},
+								KeptnServiceExecutions: map[string]*operations.KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-type": 1,
+										},
+									},
 								},
 							},
 						},
@@ -423,7 +455,21 @@ func TestStatisticsBucket(t *testing.T) {
 							"my-type":   2,
 							"my-type-2": 1,
 						},
-						KeptnServiceExecutions: map[string]int{},
+						KeptnServiceExecutions: map[string]*operations.KeptnService{
+							"my-keptn-service": {
+								Name: "my-keptn-service",
+								Executions: map[string]int{
+									"my-type":   1,
+									"my-type-2": 1,
+								},
+							},
+							"my-keptn-service-2": {
+								Name: "my-keptn-service-2",
+								Executions: map[string]int{
+									"my-type": 1,
+								},
+							},
+						},
 					},
 				},
 			},
@@ -474,6 +520,7 @@ func TestStatisticsBucket(t *testing.T) {
 		},
 		Shkeptncontext: "my-context",
 		Type:           "my-type",
+		Source:         "my-keptn-service",
 	})
 
 	sb.AddEvent(operations.Event{
@@ -483,6 +530,7 @@ func TestStatisticsBucket(t *testing.T) {
 		},
 		Shkeptncontext: "my-context",
 		Type:           "my-type-2",
+		Source:         "my-keptn-service",
 	})
 
 	sb.AddEvent(operations.Event{
@@ -492,6 +540,7 @@ func TestStatisticsBucket(t *testing.T) {
 		},
 		Shkeptncontext: "my-context-2",
 		Type:           "my-type",
+		Source:         "my-keptn-service-2",
 	})
 
 	select {

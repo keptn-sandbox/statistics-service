@@ -305,6 +305,14 @@ func TestMergeStatistics(t *testing.T) {
 										Events: map[string]int{
 											"my-type": 1,
 										},
+										KeptnServiceExecutions: map[string]*KeptnService{
+											"my-keptn-service": {
+												Name: "my-keptn-service",
+												Executions: map[string]int{
+													"my-type": 1,
+												},
+											},
+										},
 									},
 								},
 							},
@@ -323,6 +331,14 @@ func TestMergeStatistics(t *testing.T) {
 										Events: map[string]int{
 											"my-type":   1,
 											"my-type-2": 1,
+										},
+										KeptnServiceExecutions: map[string]*KeptnService{
+											"my-keptn-service": {
+												Name: "my-keptn-service",
+												Executions: map[string]int{
+													"my-type": 1,
+												},
+											},
 										},
 									},
 								},
@@ -364,7 +380,14 @@ func TestMergeStatistics(t *testing.T) {
 									"my-type":   2,
 									"my-type-2": 1,
 								},
-								KeptnServiceExecutions: map[string]int{},
+								KeptnServiceExecutions: map[string]*KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-type": 2,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -378,7 +401,7 @@ func TestMergeStatistics(t *testing.T) {
 									"my-type":   2,
 									"my-type-2": 1,
 								},
-								KeptnServiceExecutions: map[string]int{},
+								KeptnServiceExecutions: map[string]*KeptnService{},
 							},
 						},
 					},
@@ -411,6 +434,7 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 		projectName      string
 		serviceName      string
 		keptnServiceName string
+		eventType        string
 		increment        int
 	}
 	tests := []struct {
@@ -435,8 +459,13 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 								Events: map[string]int{
 									"my-event": 1,
 								},
-								KeptnServiceExecutions: map[string]int{
-									"my-keptn-service": 1,
+								KeptnServiceExecutions: map[string]*KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-event": 1,
+										},
+									},
 								},
 							},
 						},
@@ -447,6 +476,7 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 				projectName:      "my-project",
 				serviceName:      "my-service",
 				keptnServiceName: "my-keptn-service",
+				eventType:        "my-event",
 				increment:        1,
 			},
 			wantResult: 2,
@@ -466,8 +496,13 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 								Events: map[string]int{
 									"my-event": 1,
 								},
-								KeptnServiceExecutions: map[string]int{
-									"my-keptn-service": 1,
+								KeptnServiceExecutions: map[string]*KeptnService{
+									"my-keptn-service": {
+										Name: "my-keptn-service",
+										Executions: map[string]int{
+											"my-event": 1,
+										},
+									},
 								},
 							},
 						},
@@ -478,6 +513,7 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 				projectName:      "my-project",
 				serviceName:      "my-service",
 				keptnServiceName: "my-keptn-service",
+				eventType:        "my-event",
 				increment:        2,
 			},
 			wantResult: 3,
@@ -491,8 +527,8 @@ func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
 				Projects: tt.fields.Projects,
 			}
 
-			s.IncreaseKeptnServiceExecutionCount(tt.args.projectName, tt.args.serviceName, tt.args.keptnServiceName, tt.args.increment)
-			result := s.Projects[tt.args.projectName].Services[tt.args.serviceName].KeptnServiceExecutions[tt.args.keptnServiceName]
+			s.IncreaseKeptnServiceExecutionCount(tt.args.projectName, tt.args.serviceName, tt.args.keptnServiceName, tt.args.eventType, tt.args.increment)
+			result := s.Projects[tt.args.projectName].Services[tt.args.serviceName].KeptnServiceExecutions[tt.args.keptnServiceName].Executions[tt.args.eventType]
 			if result != tt.wantResult {
 				t.Errorf("Statistics.IncreaseEventTypeCount(): want %d, got %d", tt.wantResult, result)
 			}
