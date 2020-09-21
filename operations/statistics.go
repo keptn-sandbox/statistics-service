@@ -31,6 +31,17 @@ type Service struct {
 }
 
 func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceName string) {
+	s.ensureProjectExists(projectName)
+	if s.Projects[projectName].Services[serviceName] == nil {
+		s.Projects[projectName].Services[serviceName] = &Service{
+			Name:              serviceName,
+			ExecutedSequences: 0,
+			Events:            map[string]int{},
+		}
+	}
+}
+
+func (s *Statistics) ensureProjectExists(projectName string) {
 	if s.Projects == nil {
 		s.Projects = map[string]*Project{}
 	}
@@ -38,13 +49,6 @@ func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceNam
 		s.Projects[projectName] = &Project{
 			Name:     projectName,
 			Services: map[string]*Service{},
-		}
-	}
-	if s.Projects[projectName].Services[serviceName] == nil {
-		s.Projects[projectName].Services[serviceName] = &Service{
-			Name:              serviceName,
-			ExecutedSequences: 0,
-			Events:            map[string]int{},
 		}
 	}
 }
@@ -67,6 +71,7 @@ func (s *Statistics) IncreaseExecutedSequencesCount(projectName, serviceName str
 func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
 	for _, stats := range statistics {
 		for projectName, project := range stats.Projects {
+			target.ensureProjectExists(projectName)
 			for serviceName, service := range project.Services {
 				for eventType, count := range service.Events {
 					target.IncreaseEventTypeCount(projectName, serviceName, eventType, count)
