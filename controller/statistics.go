@@ -20,6 +20,7 @@ type statisticsBucket struct {
 	logger          keptn.LoggerInterface
 	lock            sync.Mutex
 	cutoffTime      time.Time
+	nextGenEvents   bool
 }
 
 // GetStatisticsBucketInstance godoc
@@ -29,6 +30,7 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 		statisticsBucketInstance = &statisticsBucket{
 			StatisticsRepo: db.StatisticsMongoDBRepo{},
 			logger:         keptn.NewLogger("", "", "statistics service"),
+			nextGenEvents:  env.NextGenEvents,
 		}
 
 		statisticsBucketInstance.bucketTimer = time.NewTicker(time.Duration(env.AggregationIntervalSeconds) * time.Second)
@@ -72,6 +74,11 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	sb.Statistics.IncreaseEventTypeCount(event.Data.Project, event.Data.Service, event.Type, 1)
 	if increaseExecutedSequences {
 		sb.Statistics.IncreaseExecutedSequencesCount(event.Data.Project, event.Data.Service, 1)
+	}
+	if sb.nextGenEvents {
+		// increase service execution count using .started events
+	} else {
+		// increase service execution count using 'source' property from event
 	}
 }
 

@@ -25,18 +25,20 @@ type Project struct {
 
 // Service godoc
 type Service struct {
-	Name              string         `json:"name" bson:"name"`
-	ExecutedSequences int            `json:"executedSequences" bson:"executedSequences"`
-	Events            map[string]int `json:"events" bson:"events"`
+	Name                   string         `json:"name" bson:"name"`
+	ExecutedSequences      int            `json:"executedSequences" bson:"executedSequences"`
+	Events                 map[string]int `json:"events" bson:"events"`
+	KeptnServiceExecutions map[string]int `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
 }
 
 func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceName string) {
 	s.ensureProjectExists(projectName)
 	if s.Projects[projectName].Services[serviceName] == nil {
 		s.Projects[projectName].Services[serviceName] = &Service{
-			Name:              serviceName,
-			ExecutedSequences: 0,
-			Events:            map[string]int{},
+			Name:                   serviceName,
+			ExecutedSequences:      0,
+			Events:                 map[string]int{},
+			KeptnServiceExecutions: map[string]int{},
 		}
 	}
 }
@@ -65,6 +67,13 @@ func (s *Statistics) IncreaseExecutedSequencesCount(projectName, serviceName str
 	s.ensureProjectAndServiceExist(projectName, serviceName)
 	service := s.Projects[projectName].Services[serviceName]
 	service.ExecutedSequences = service.ExecutedSequences + increment
+}
+
+// IncreaseKeptnServiceExecutionCount godoc
+func (s *Statistics) IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName string, increment int) {
+	s.ensureProjectAndServiceExist(projectName, serviceName)
+	service := s.Projects[projectName].Services[serviceName]
+	service.KeptnServiceExecutions[keptnServiceName] = service.KeptnServiceExecutions[keptnServiceName] + increment
 }
 
 // MergeStatistics godoc

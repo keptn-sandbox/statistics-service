@@ -364,6 +364,7 @@ func TestMergeStatistics(t *testing.T) {
 									"my-type":   2,
 									"my-type-2": 1,
 								},
+								KeptnServiceExecutions: map[string]int{},
 							},
 						},
 					},
@@ -377,6 +378,7 @@ func TestMergeStatistics(t *testing.T) {
 									"my-type":   2,
 									"my-type-2": 1,
 								},
+								KeptnServiceExecutions: map[string]int{},
 							},
 						},
 					},
@@ -394,6 +396,105 @@ func TestMergeStatistics(t *testing.T) {
 				for _, d := range diff {
 					t.Log(d)
 				}
+			}
+		})
+	}
+}
+
+func TestStatistics_IncreaseKeptnServiceExecutionCount(t *testing.T) {
+	type fields struct {
+		From     time.Time
+		To       time.Time
+		Projects map[string]*Project
+	}
+	type args struct {
+		projectName      string
+		serviceName      string
+		keptnServiceName string
+		increment        int
+	}
+	tests := []struct {
+		name       string
+		fields     fields
+		args       args
+		wantResult int
+	}{
+
+		{
+			name: "increase by one - previous value = 1",
+			fields: fields{
+				From: time.Time{},
+				To:   time.Time{},
+				Projects: map[string]*Project{
+					"my-project": &Project{
+						Name: "my-project",
+						Services: map[string]*Service{
+							"my-service": &Service{
+								Name:              "my-service",
+								ExecutedSequences: 1,
+								Events: map[string]int{
+									"my-event": 1,
+								},
+								KeptnServiceExecutions: map[string]int{
+									"my-keptn-service": 1,
+								},
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				projectName:      "my-project",
+				serviceName:      "my-service",
+				keptnServiceName: "my-keptn-service",
+				increment:        1,
+			},
+			wantResult: 2,
+		},
+		{
+			name: "increase by two - previous value = 1",
+			fields: fields{
+				From: time.Time{},
+				To:   time.Time{},
+				Projects: map[string]*Project{
+					"my-project": &Project{
+						Name: "my-project",
+						Services: map[string]*Service{
+							"my-service": &Service{
+								Name:              "my-service",
+								ExecutedSequences: 1,
+								Events: map[string]int{
+									"my-event": 1,
+								},
+								KeptnServiceExecutions: map[string]int{
+									"my-keptn-service": 1,
+								},
+							},
+						},
+					},
+				},
+			},
+			args: args{
+				projectName:      "my-project",
+				serviceName:      "my-service",
+				keptnServiceName: "my-keptn-service",
+				increment:        2,
+			},
+			wantResult: 3,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := &Statistics{
+				From:     tt.fields.From,
+				To:       tt.fields.To,
+				Projects: tt.fields.Projects,
+			}
+
+			s.IncreaseKeptnServiceExecutionCount(tt.args.projectName, tt.args.serviceName, tt.args.keptnServiceName, tt.args.increment)
+			result := s.Projects[tt.args.projectName].Services[tt.args.serviceName].KeptnServiceExecutions[tt.args.keptnServiceName]
+			if result != tt.wantResult {
+				t.Errorf("Statistics.IncreaseEventTypeCount(): want %d, got %d", tt.wantResult, result)
 			}
 		})
 	}

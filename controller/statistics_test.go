@@ -237,6 +237,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 								Events: map[string]int{
 									"my-type": 1,
 								},
+								KeptnServiceExecutions: map[string]int{},
 							},
 						},
 					},
@@ -263,6 +264,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 									Events: map[string]int{
 										"my-type": 1,
 									},
+									KeptnServiceExecutions: map[string]int{},
 								},
 							},
 						},
@@ -297,6 +299,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 								Events: map[string]int{
 									"my-type": 2,
 								},
+								KeptnServiceExecutions: map[string]int{},
 							},
 						},
 					},
@@ -420,6 +423,7 @@ func TestStatisticsBucket(t *testing.T) {
 							"my-type":   2,
 							"my-type-2": 1,
 						},
+						KeptnServiceExecutions: map[string]int{},
 					},
 				},
 			},
