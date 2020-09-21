@@ -21,7 +21,7 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            - name: AGGREGATION_INTERVAL_MINUTES
+            - name: AGGREGATION_INTERVAL_SECONDS
               value: '1800'
             - name: NEXT_GEN_EVENTS
               value: 'false'
