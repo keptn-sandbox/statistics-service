@@ -22,6 +22,7 @@ type statisticsBucket struct {
 	cutoffTime      time.Time
 }
 
+// GetStatisticsBucketInstance godoc
 func GetStatisticsBucketInstance() *statisticsBucket {
 	if statisticsBucketInstance == nil {
 		env := config.GetConfig()
@@ -44,10 +45,22 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 	return statisticsBucketInstance
 }
 
+// GetCutoffTime
 func (sb *statisticsBucket) GetCutoffTime() time.Time {
 	return sb.cutoffTime
 }
 
+// GetStatistics godoc
+func (sb *statisticsBucket) GetStatistics() *operations.Statistics {
+	return sb.Statistics
+}
+
+// GetRepo godoc
+func (sb *statisticsBucket) GetRepo() db.StatisticsRepo {
+	return sb.StatisticsRepo
+}
+
+// AddEvent godoc
 func (sb *statisticsBucket) AddEvent(event operations.Event) {
 	sb.lock.Lock()
 	defer sb.lock.Unlock()

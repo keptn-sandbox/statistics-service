@@ -31,7 +31,7 @@ func GetStatistics(c *gin.Context) {
 		return
 	}
 
-	if params.To.Before(params.From) {
+	if !validateQueryTimestamps(params) {
 		c.JSON(http.StatusBadRequest, operations.Error{
 			ErrorCode: 400,
 			Message:   "Invalid time frame: 'from' timestamp must not be greater than 'to' timestamp",
@@ -39,16 +39,36 @@ func GetStatistics(c *gin.Context) {
 		return
 	}
 
+	sb := controller.GetStatisticsBucketInstance()
+
+	payload, err := getStatistics(params, sb)
+	if err != nil && err == db.NoStatisticsFoundError {
+		c.JSON(http.StatusNotFound, operations.Error{
+			Message:   "no statistics found for selected time frame",
+			ErrorCode: 404,
+		})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, operations.Error{
+			Message:   "Internal server error",
+			ErrorCode: 500,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, payload)
+}
+
+func getStatistics(params *operations.GetStatisticsParams, sb controller.StatisticsInterface) (operations.Statistics, error) {
 	var payload = operations.Statistics{}
 
-	sb := controller.GetStatisticsBucketInstance()
 	cutoffTime := sb.GetCutoffTime()
 
 	// check time
 	if params.From.After(cutoffTime) {
 		// case 1: time frame within "in-memory" interval (e.g. last 30 minutes)
 		// -> return in-memory object
-		payload = *sb.Statistics
+		payload = *sb.GetStatistics()
 
 	} else {
 		var statistics []operations.Statistics
@@ -56,32 +76,18 @@ func GetStatistics(c *gin.Context) {
 		if params.From.Before(cutoffTime) && params.To.Before(cutoffTime) {
 			// case 2: time frame outside of "in-memory" interval
 			// -> return results from database
-			statistics, err = sb.StatisticsRepo.GetStatistics(params.From, params.To)
+			statistics, err = sb.GetRepo().GetStatistics(params.From, params.To)
 			if err != nil && err == db.NoStatisticsFoundError {
-				c.JSON(http.StatusNotFound, operations.Error{
-					Message:   "no statistics found for selected time frame",
-					ErrorCode: 404,
-				})
-				return
-			} else if err != nil {
-				c.JSON(http.StatusNotFound, operations.Error{
-					Message:   "",
-					ErrorCode: 500,
-				})
-				return
+				return payload, err
 			}
 		} else if params.From.Before(cutoffTime) && params.To.After(cutoffTime) {
 			// case 3: time frame includes "in-memory" interval
 			// -> get results from database and from in-memory and merge them
-			statistics, err := sb.StatisticsRepo.GetStatistics(params.From, params.To)
+			statistics, err = sb.GetRepo().GetStatistics(params.From, params.To)
 			if err != nil {
-				c.JSON(http.StatusNotFound, operations.Error{
-					Message:   "",
-					ErrorCode: 500,
-				})
-				return
+				return payload, err
 			}
-			statistics = append(statistics, *sb.Statistics)
+			statistics = append(statistics, *sb.GetStatistics())
 		}
 
 		payload = operations.Statistics{
@@ -90,10 +96,12 @@ func GetStatistics(c *gin.Context) {
 		}
 		payload = operations.MergeStatistics(payload, statistics)
 	}
-
-	c.JSON(http.StatusOK, payload)
+	return payload, nil
 }
 
-func stringp(s string) *string {
-	return &s
+func validateQueryTimestamps(params *operations.GetStatisticsParams) bool {
+	if params.To.Before(params.From) {
+		return false
+	}
+	return true
 }
