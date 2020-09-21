@@ -5,7 +5,6 @@ import (
 	"github.com/globalsign/mgo/bson"
 	"github.com/keptn-sandbox/statistics-service/operations"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
 
@@ -25,7 +24,7 @@ func (s StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.S
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	sortOptions := options.Find().SetSort(bson.D{{"from", 1}})
+	//sortOptions := options.Find().SetSort(bson.D{{"from", 1}}).
 	searchOptions := bson.M{}
 
 	searchOptions["from"] = bson.M{
@@ -35,7 +34,7 @@ func (s StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.S
 		"$lt": to,
 	}
 
-	cur, err := collection.Find(ctx, searchOptions, sortOptions)
+	cur, err := collection.Find(ctx, searchOptions)
 	if err != nil {
 		return nil, err
 	}

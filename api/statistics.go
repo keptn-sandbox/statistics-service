@@ -5,6 +5,7 @@ import (
 	"github.com/keptn-sandbox/statistics-service/controller"
 	"github.com/keptn-sandbox/statistics-service/db"
 	"github.com/keptn-sandbox/statistics-service/operations"
+	keptn "github.com/keptn/go-utils/pkg/lib"
 	"net/http"
 )
 
@@ -22,6 +23,7 @@ import (
 // @Failure 500 {object} operations.Error "Internal error"
 // @Router /statistics [get]
 func GetStatistics(c *gin.Context) {
+	logger := keptn.NewLogger("", "", "statistics-service")
 	params := &operations.GetStatisticsParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		c.JSON(http.StatusBadRequest, operations.Error{
@@ -49,6 +51,7 @@ func GetStatistics(c *gin.Context) {
 		})
 		return
 	} else if err != nil {
+		logger.Error("could not retrieve statistics: " + err.Error())
 		c.JSON(http.StatusInternalServerError, operations.Error{
 			Message:   "Internal server error",
 			ErrorCode: 500,
@@ -84,8 +87,8 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 			// case 3: time frame includes "in-memory" interval
 			// -> get results from database and from in-memory and merge them
 			statistics, err = sb.GetRepo().GetStatistics(params.From, params.To)
-			if err != nil {
-				return payload, err
+			if statistics == nil {
+				statistics = []operations.Statistics{}
 			}
 			statistics = append(statistics, *sb.GetStatistics())
 		}
