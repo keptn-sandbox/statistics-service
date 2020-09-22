@@ -54,7 +54,7 @@ http://localhost:8080/v1/statistics?from=1600656105&to=1600696105
 cURL Example:
 
 ```
-curl -X GET "http://localhost:8084/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
+curl -X GET "http://localhost:8080/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
 ```
 
 ### Configuring the service
