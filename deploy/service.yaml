@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: statistics-service
-          image: keptnsandbox/statistics-service:latest
+          image: keptnsandbox/statistics-service:0.0.0-master
           ports:
             - containerPort: 8080
           env:
