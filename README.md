@@ -44,7 +44,7 @@ kubectl port-forward -n keptn svc/statistics-service 8080
 
 You can then browse the API docs at by opening the Swagger docs in your [browser](http://localhost:8080/swagger-ui/index.html).
 
-To retrieve usage statistics for a certain time frame, you need to provide the Unix timestamps for the start and end of the time frame.
+To retrieve usage statistics for a certain time frame, you need to provide the [Unix timestamps](https://www.epochconverter.com/) for the start and end of the time frame.
 E.g.:
 
 ```
@@ -56,6 +56,8 @@ cURL Example:
 ```
 curl -X GET "http://localhost:8080/v1/statistics?from=1600656105&to=1600696105" -H "accept: application/json"
 ```
+
+*Note*: You can generate timestamps using [epochconverter.com](https://www.epochconverter.com/).
 
 ### Configuring the service
 
