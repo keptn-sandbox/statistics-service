@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn-sandbox/statistics-service/controller"
 	"github.com/keptn-sandbox/statistics-service/db"
@@ -44,6 +45,7 @@ func GetStatistics(c *gin.Context) {
 	sb := controller.GetStatisticsBucketInstance()
 
 	payload, err := getStatistics(params, sb)
+
 	if err != nil && err == db.NoStatisticsFoundError {
 		c.JSON(http.StatusNotFound, operations.Error{
 			Message:   "no statistics found for selected time frame",
@@ -62,8 +64,8 @@ func GetStatistics(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-func getStatistics(params *operations.GetStatisticsParams, sb controller.StatisticsInterface) (operations.Statistics, error) {
-	var payload = operations.Statistics{}
+func getStatistics(params *operations.GetStatisticsParams, sb controller.StatisticsInterface) (operations.GetStatisticsResponse, error) {
+	var mergedStatistics = operations.Statistics{}
 
 	cutoffTime := sb.GetCutoffTime()
 
@@ -71,7 +73,7 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 	if params.From.After(cutoffTime) {
 		// case 1: time frame within "in-memory" interval (e.g. last 30 minutes)
 		// -> return in-memory object
-		payload = *sb.GetStatistics()
+		mergedStatistics = *sb.GetStatistics()
 
 	} else {
 		var statistics []operations.Statistics
@@ -81,7 +83,7 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 			// -> return results from database
 			statistics, err = sb.GetRepo().GetStatistics(params.From, params.To)
 			if err != nil && err == db.NoStatisticsFoundError {
-				return payload, err
+				return operations.GetStatisticsResponse{}, err
 			}
 		} else if params.From.Before(cutoffTime) && params.To.After(cutoffTime) {
 			// case 3: time frame includes "in-memory" interval
@@ -93,13 +95,24 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 			statistics = append(statistics, *sb.GetStatistics())
 		}
 
-		payload = operations.Statistics{
+		mergedStatistics = operations.Statistics{
 			From: params.From,
 			To:   params.To,
 		}
-		payload = operations.MergeStatistics(payload, statistics)
+		mergedStatistics = operations.MergeStatistics(mergedStatistics, statistics)
 	}
-	return payload, nil
+	return convertToGetStatisticsResponse(mergedStatistics)
+}
+
+func convertToGetStatisticsResponse(mergedStatistics operations.Statistics) (operations.GetStatisticsResponse, error) {
+	marshal, _ := json.Marshal(mergedStatistics)
+	var result operations.GetStatisticsResponse
+
+	err := json.Unmarshal(marshal, &result)
+	if err != nil {
+		return result, err
+	}
+	return result, nil
 }
 
 func validateQueryTimestamps(params *operations.GetStatisticsParams) bool {

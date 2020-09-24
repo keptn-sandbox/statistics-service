@@ -104,7 +104,7 @@ func Test_getStatistics(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    operations.Statistics
+		want    operations.GetStatisticsResponse
 		wantErr bool
 	}{
 		{
@@ -129,13 +129,13 @@ func Test_getStatistics(t *testing.T) {
 					Repo: nil,
 				},
 			},
-			want: operations.Statistics{
+			want: operations.GetStatisticsResponse{
 				From: time.Time{},
 				To:   time.Time{},
-				Projects: map[string]*operations.Project{
+				Projects: map[string]*operations.GetStatisticsResponseProject{
 					"my-project": {
 						Name:     "my-project",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 				},
 			},
@@ -179,17 +179,17 @@ func Test_getStatistics(t *testing.T) {
 					},
 				},
 			},
-			want: operations.Statistics{
+			want: operations.GetStatisticsResponse{
 				From: time.Now().Round(time.Minute),
 				To:   time.Now().Add(5 * time.Minute).Round(time.Minute),
-				Projects: map[string]*operations.Project{
+				Projects: map[string]*operations.GetStatisticsResponseProject{
 					"my-project": {
 						Name:     "my-project",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 					"my-project-2": {
 						Name:     "my-project-2",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 				},
 			},
@@ -242,21 +242,21 @@ func Test_getStatistics(t *testing.T) {
 					},
 				},
 			},
-			want: operations.Statistics{
+			want: operations.GetStatisticsResponse{
 				From: time.Now().Round(time.Minute),
 				To:   time.Now().Add(5 * time.Minute).Round(time.Minute),
-				Projects: map[string]*operations.Project{
+				Projects: map[string]*operations.GetStatisticsResponseProject{
 					"my-project-in-memory": {
 						Name:     "my-project-in-memory",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 					"my-project": {
 						Name:     "my-project",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 					"my-project-2": {
 						Name:     "my-project-2",
-						Services: map[string]*operations.Service{},
+						Services: map[string]*operations.GetStatisticsResponseService{},
 					},
 				},
 			},
