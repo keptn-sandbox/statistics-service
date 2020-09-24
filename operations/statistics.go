@@ -12,6 +12,34 @@ type GetStatisticsParams struct {
 	To time.Time `form:"to" json:"to" time_format:"unix"`
 }
 
+// GetStatisticsResponse godoc
+type GetStatisticsResponse struct {
+	// From godoc
+	From time.Time `json:"from" bson:"from"`
+	// To godoc
+	To time.Time `json:"to" bson:"to"`
+	// Projects godoc
+	Projects map[string]*GetStatisticsResponseProject `json:"projects" bson:"projects"`
+}
+
+// GetStatisticsResponseProject godoc
+type GetStatisticsResponseProject struct {
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// Services godoc
+	Services map[string]*GetStatisticsResponseService `json:"services" bson:"services"`
+}
+
+// GetStatisticsResponseService godoc
+type GetStatisticsResponseService struct {
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// Events godoc
+	Events map[string]int `json:"events" bson:"events"`
+	// KeptnServiceExecutions godoc
+	KeptnServiceExecutions map[string]*KeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+}
+
 // Statistics godoc
 type Statistics struct {
 	// From godoc
