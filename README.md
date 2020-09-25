@@ -7,7 +7,7 @@ This service provides usage statistics about a Keptn installation.
 To deploy the current version of the *shipyard-controller* in your Keptn Kubernetes cluster, use the files `deploy/pvc.yaml` and `deploy/service.yaml` from this repository and apply it.
 
 ```console
-kubectl apply -f deploy/service.yaml
+kubectl apply -f deploy/service.yaml -n keptn
 ```
 
 ## Delete in your Kubernetes cluster
@@ -15,7 +15,7 @@ kubectl apply -f deploy/service.yaml
 To delete a deployed *shipyard-controller*, use the files `deploy/pvc.yaml` and `deploy/service.yaml` from this repository and delete the Kubernetes resources:
 
 ```console
-kubectl delete -f deploy/service.yaml
+kubectl delete -f deploy/service.yaml -n keptn
 ```
 
 ### Generate  Swagger doc from source
