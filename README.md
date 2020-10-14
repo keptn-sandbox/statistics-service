@@ -2,6 +2,14 @@
 
 This service provides usage statistics about a Keptn installation.
 
+## Compatibilty Matrix
+
+| Keptn Version    | [Statistics Service](https://hub.docker.com/r/keptnsandbox/statistics-service/tags?page=1&ordering=last_updated) | Kubernetes Versions                      |
+|:----------------:|:----------------------------------------:|:----------------------------------------:|
+|       0.7.1      | keptnsandbox/statistics-service:0.1.0    | 1.14 - 1.19                              |
+|       0.7.2      | keptnsandbox/statistics-service:0.1.1    | 1.14 - 1.19                              |
+
+
 ## Deploy in your Kubernetes cluster
 
 To deploy the current version of the *shipyard-controller* in your Keptn Kubernetes cluster, use the files `deploy/pvc.yaml` and `deploy/service.yaml` from this repository and apply it.
@@ -12,7 +20,7 @@ kubectl apply -f deploy/service.yaml -n keptn
 
 ## Delete in your Kubernetes cluster
 
-To delete a deployed *shipyard-controller*, use the files `deploy/pvc.yaml` and `deploy/service.yaml` from this repository and delete the Kubernetes resources:
+To delete a deployed *statistics-service*, use `deploy/service.yaml` from this repository and delete the Kubernetes resources:
 
 ```console
 kubectl delete -f deploy/service.yaml -n keptn
