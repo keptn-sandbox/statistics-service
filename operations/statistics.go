@@ -19,7 +19,7 @@ type GetStatisticsResponse struct {
 	// To godoc
 	To time.Time `json:"to" bson:"to"`
 	// Projects godoc
-	Projects map[string]*GetStatisticsResponseProject `json:"projects" bson:"projects"`
+	Projects []GetStatisticsResponseProject `json:"projects" bson:"projects"`
 }
 
 // GetStatisticsResponseProject godoc
@@ -27,7 +27,7 @@ type GetStatisticsResponseProject struct {
 	// Name godoc
 	Name string `json:"name" bson:"name"`
 	// Services godoc
-	Services map[string]*GetStatisticsResponseService `json:"services" bson:"services"`
+	Services []GetStatisticsResponseService `json:"services" bson:"services"`
 }
 
 // GetStatisticsResponseService godoc
@@ -35,9 +35,25 @@ type GetStatisticsResponseService struct {
 	// Name godoc
 	Name string `json:"name" bson:"name"`
 	// Events godoc
-	Events map[string]int `json:"events" bson:"events"`
+	Events []GetStatisticsResponseEvent `json:"events" bson:"events"`
 	// KeptnServiceExecutions godoc
-	KeptnServiceExecutions map[string]*KeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+	KeptnServiceExecutions []GetStatisticsResponseKeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+}
+
+// GetStatisticsResponseEvent godoc+
+type GetStatisticsResponseEvent struct {
+	// Type godoc
+	Type string `json:"type" bson:"type"`
+	// Count
+	Count int `json:"count" bson:"count"`
+}
+
+// GetStatisticsResponseKeptnService godoc
+type GetStatisticsResponseKeptnService struct {
+	// Name godoc
+	Name string `json:"name" bson:"name"`
+	// Executions godoc
+	Executions []GetStatisticsResponseEvent `json:"executions" bson:"executions"`
 }
 
 // Statistics godoc
