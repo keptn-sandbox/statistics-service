@@ -58,8 +58,8 @@ func (m *MockStatisticsInterface) GetCutoffTime() time.Time {
 	return m.CutoffTime
 }
 
-func (m *MockStatisticsInterface) GetStatistics() *operations.Statistics {
-	return m.Statistics
+func (m *MockStatisticsInterface) GetStatistics() operations.Statistics {
+	return *m.Statistics
 }
 
 func (m *MockStatisticsInterface) AddEvent(event operations.Event) {

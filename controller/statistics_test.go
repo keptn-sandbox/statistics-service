@@ -40,7 +40,7 @@ func (m *MockStatisticsRepo) DeleteStatistics(from, to time.Time) error {
 func Test_statisticsBucket_createNewBucket(t *testing.T) {
 	type fields struct {
 		StatisticsRepo  db.StatisticsRepo
-		Statistics      *operations.Statistics
+		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
 		logger          keptn.LoggerInterface
@@ -54,20 +54,15 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 		{
 			name: "create statistics bucket - initially nil",
 			fields: fields{
-				StatisticsRepo:  nil,
-				Statistics:      nil,
-				bucketTimer:     nil,
-				uniqueSequences: nil,
-				logger:          nil,
-				lock:            sync.Mutex{},
-				cutoffTime:      time.Time{},
+				lock:       sync.Mutex{},
+				cutoffTime: time.Time{},
 			},
 		},
 		{
 			name: "create statistics bucket - replace previous bucket",
 			fields: fields{
 				StatisticsRepo: nil,
-				Statistics: &operations.Statistics{
+				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
 					Projects: map[string]*operations.Project{
@@ -99,9 +94,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 			}
 			sb.createNewBucket()
 
-			if sb.Statistics == nil {
-				t.Error("createNewBucket() failed: Statistics == nil")
-			}
 			if len(sb.Statistics.Projects) > 0 {
 				t.Errorf("Statistics have not been replaced properly. Got length = %d", len(sb.Statistics.Projects))
 			}
@@ -115,7 +107,7 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 	type fields struct {
 		StatisticsRepo  *MockStatisticsRepo
-		Statistics      *operations.Statistics
+		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
 		logger          keptn.LoggerInterface
@@ -134,7 +126,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 					StoreStatisticsFunc:  nil,
 					DeleteStatisticsFunc: nil,
 				},
-				Statistics: &operations.Statistics{
+				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
 					Projects: map[string]*operations.Project{
@@ -164,7 +156,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 				cutoffTime:      tt.fields.cutoffTime,
 			}
 			tt.fields.StatisticsRepo.StoreStatisticsFunc = func(statistics operations.Statistics) error {
-				diff := deep.Equal(statistics, *sb.Statistics)
+				diff := deep.Equal(statistics, sb.Statistics)
 				if len(diff) > 0 {
 					t.Error("StatisticsRepo did not receive expected value")
 					for _, d := range diff {
@@ -182,7 +174,7 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 func Test_statisticsBucket_AddEvent(t *testing.T) {
 	type fields struct {
 		StatisticsRepo  db.StatisticsRepo
-		Statistics      *operations.Statistics
+		Statistics      operations.Statistics
 		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
 		logger          keptn.LoggerInterface
@@ -196,14 +188,14 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 		name                    string
 		fields                  fields
 		args                    args
-		expectedStatistics      *operations.Statistics
+		expectedStatistics      operations.Statistics
 		expectedUniqueSequences map[string]bool
 	}{
 		{
 			name: "Add event to empty bucket",
 			fields: fields{
 				StatisticsRepo: nil,
-				Statistics: &operations.Statistics{
+				Statistics: operations.Statistics{
 					From:     time.Time{},
 					To:       time.Time{},
 					Projects: nil,
@@ -225,7 +217,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					Source:         "my-keptn-service",
 				},
 			},
-			expectedStatistics: &operations.Statistics{
+			expectedStatistics: operations.Statistics{
 				From: time.Time{},
 				To:   time.Time{},
 				Projects: map[string]*operations.Project{
@@ -259,7 +251,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 			name: "Add event to existing bucket",
 			fields: fields{
 				StatisticsRepo: nil,
-				Statistics: &operations.Statistics{
+				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
 					Projects: map[string]*operations.Project{
@@ -302,7 +294,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					Source:         "my-keptn-service",
 				},
 			},
-			expectedStatistics: &operations.Statistics{
+			expectedStatistics: operations.Statistics{
 				From: time.Time{},
 				To:   time.Time{},
 				Projects: map[string]*operations.Project{
@@ -336,7 +328,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 			name: "Add event to existing bucket for second event of same context",
 			fields: fields{
 				StatisticsRepo: nil,
-				Statistics: &operations.Statistics{
+				Statistics: operations.Statistics{
 					From: time.Time{},
 					To:   time.Time{},
 					Projects: map[string]*operations.Project{
@@ -373,7 +365,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 					Source:         "my-keptn-service",
 				},
 			},
-			expectedStatistics: &operations.Statistics{
+			expectedStatistics: operations.Statistics{
 				From: time.Time{},
 				To:   time.Time{},
 				Projects: map[string]*operations.Project{
