@@ -1,11 +1,10 @@
 package api
 
 import (
-	"github.com/go-test/deep"
 	"github.com/keptn-sandbox/statistics-service/controller"
 	"github.com/keptn-sandbox/statistics-service/db"
 	"github.com/keptn-sandbox/statistics-service/operations"
-	"reflect"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
@@ -132,10 +131,10 @@ func Test_getStatistics(t *testing.T) {
 			want: operations.GetStatisticsResponse{
 				From: time.Time{},
 				To:   time.Time{},
-				Projects: map[string]*operations.GetStatisticsResponseProject{
-					"my-project": {
+				Projects: []operations.GetStatisticsResponseProject{
+					{
 						Name:     "my-project",
-						Services: map[string]*operations.GetStatisticsResponseService{},
+						Services: []operations.GetStatisticsResponseService{},
 					},
 				},
 			},
@@ -182,14 +181,14 @@ func Test_getStatistics(t *testing.T) {
 			want: operations.GetStatisticsResponse{
 				From: time.Now().Round(time.Minute),
 				To:   time.Now().Add(5 * time.Minute).Round(time.Minute),
-				Projects: map[string]*operations.GetStatisticsResponseProject{
-					"my-project": {
+				Projects: []operations.GetStatisticsResponseProject{
+					{
 						Name:     "my-project",
-						Services: map[string]*operations.GetStatisticsResponseService{},
+						Services: []operations.GetStatisticsResponseService{},
 					},
-					"my-project-2": {
+					{
 						Name:     "my-project-2",
-						Services: map[string]*operations.GetStatisticsResponseService{},
+						Services: []operations.GetStatisticsResponseService{},
 					},
 				},
 			},
@@ -245,18 +244,18 @@ func Test_getStatistics(t *testing.T) {
 			want: operations.GetStatisticsResponse{
 				From: time.Now().Round(time.Minute),
 				To:   time.Now().Add(5 * time.Minute).Round(time.Minute),
-				Projects: map[string]*operations.GetStatisticsResponseProject{
-					"my-project-in-memory": {
-						Name:     "my-project-in-memory",
-						Services: map[string]*operations.GetStatisticsResponseService{},
-					},
-					"my-project": {
+				Projects: []operations.GetStatisticsResponseProject{
+					{
 						Name:     "my-project",
-						Services: map[string]*operations.GetStatisticsResponseService{},
+						Services: []operations.GetStatisticsResponseService{},
 					},
-					"my-project-2": {
+					{
 						Name:     "my-project-2",
-						Services: map[string]*operations.GetStatisticsResponseService{},
+						Services: []operations.GetStatisticsResponseService{},
+					},
+					{
+						Name:     "my-project-in-memory",
+						Services: []operations.GetStatisticsResponseService{},
 					},
 				},
 			},
@@ -271,14 +270,7 @@ func Test_getStatistics(t *testing.T) {
 				return
 			}
 
-			diff := deep.Equal(got, tt.want)
-			if len(diff) > 0 {
-				t.Error("Returned value does not match expected result")
-				for _, d := range diff {
-					t.Log(d)
-				}
-			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if match := assert.ElementsMatch(t, got.Projects, tt.want.Projects); !match {
 				t.Errorf("getStatistics() got = %v, want %v", got, tt.want)
 			}
 		})
