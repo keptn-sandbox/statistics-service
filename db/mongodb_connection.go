@@ -28,10 +28,12 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 	var err error
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	if m.Client == nil {
 		fmt.Println("No MongoDB client has been initialized yet. Creating a new one.")
 		return m.connectMongoDBClient()
-	} else if err = m.Client.Ping(context.TODO(), nil); err != nil {
+	} else if err = m.Client.Ping(ctx, nil); err != nil {
 		fmt.Println("MongoDB client lost connection. Attempt reconnect.")
 		return m.connectMongoDBClient()
 	}
@@ -46,7 +48,6 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-
 	defer cancel()
 
 	err = m.Client.Connect(ctx)
