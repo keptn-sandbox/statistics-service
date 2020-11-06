@@ -16,7 +16,6 @@ var statisticsBucketInstance *statisticsBucket
 type statisticsBucket struct {
 	StatisticsRepo  db.StatisticsRepo
 	Statistics      operations.Statistics
-	bucketTimer     *time.Ticker
 	uniqueSequences map[string]bool
 	logger          keptn.LoggerInterface
 	lock            sync.Mutex
@@ -29,17 +28,22 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 	if statisticsBucketInstance == nil {
 		env := config.GetConfig()
 		statisticsBucketInstance = &statisticsBucket{
-			StatisticsRepo: db.StatisticsMongoDBRepo{},
-			logger:         keptn.NewLogger("", "", "statistics service"),
-			nextGenEvents:  env.NextGenEvents,
+			StatisticsRepo: &db.StatisticsMongoDBRepo{
+				DbConnection: &db.MongoDBConnection{},
+			},
+			logger:        keptn.NewLogger("", "", "statistics service"),
+			nextGenEvents: env.NextGenEvents,
 		}
 
-		statisticsBucketInstance.bucketTimer = time.NewTicker(time.Duration(env.AggregationIntervalSeconds) * time.Second)
 		statisticsBucketInstance.createNewBucket()
 		go func() {
+			bucketInterval := time.Duration(env.AggregationIntervalSeconds) * time.Second
+			bucketTimer := time.NewTimer(bucketInterval)
+			defer bucketTimer.Stop()
 			for {
-				<-statisticsBucketInstance.bucketTimer.C
-				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d minutes have passed. Creating a new statistics bucket\n", env.AggregationIntervalSeconds))
+				bucketTimer.Reset(bucketInterval)
+				<-bucketTimer.C
+				statisticsBucketInstance.logger.Info(fmt.Sprintf("%d seconds have passed. Creating a new statistics bucket\n", env.AggregationIntervalSeconds))
 				statisticsBucketInstance.storeCurrentBucket()
 				statisticsBucketInstance.createNewBucket()
 			}

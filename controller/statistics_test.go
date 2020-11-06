@@ -41,7 +41,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 	type fields struct {
 		StatisticsRepo  db.StatisticsRepo
 		Statistics      operations.Statistics
-		bucketTimer     *time.Ticker
 		uniqueSequences map[string]bool
 		logger          keptn.LoggerInterface
 		lock            sync.Mutex
@@ -71,7 +70,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 						},
 					},
 				},
-				bucketTimer: nil,
 				uniqueSequences: map[string]bool{
 					"test-context": true,
 				},
@@ -86,7 +84,6 @@ func Test_statisticsBucket_createNewBucket(t *testing.T) {
 			sb := &statisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
-				bucketTimer:     tt.fields.bucketTimer,
 				uniqueSequences: tt.fields.uniqueSequences,
 				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,
@@ -149,7 +146,6 @@ func Test_statisticsBucket_storeCurrentBucket(t *testing.T) {
 			sb := &statisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
-				bucketTimer:     tt.fields.bucketTimer,
 				uniqueSequences: tt.fields.uniqueSequences,
 				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,
@@ -401,7 +397,6 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 			sb := &statisticsBucket{
 				StatisticsRepo:  tt.fields.StatisticsRepo,
 				Statistics:      tt.fields.Statistics,
-				bucketTimer:     tt.fields.bucketTimer,
 				uniqueSequences: tt.fields.uniqueSequences,
 				logger:          tt.fields.logger,
 				lock:            tt.fields.lock,

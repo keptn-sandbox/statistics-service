@@ -59,6 +59,8 @@ func GetStatistics(c *gin.Context) {
 		})
 		return
 	}
+	payload.From = params.From
+	payload.To = params.To
 
 	c.JSON(http.StatusOK, payload)
 }
