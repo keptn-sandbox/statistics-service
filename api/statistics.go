@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/keptn-sandbox/statistics-service/controller"
 	"github.com/keptn-sandbox/statistics-service/db"
@@ -105,13 +104,51 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 }
 
 func convertToGetStatisticsResponse(mergedStatistics operations.Statistics) (operations.GetStatisticsResponse, error) {
-	marshal, _ := json.Marshal(mergedStatistics)
-	var result operations.GetStatisticsResponse
-
-	err := json.Unmarshal(marshal, &result)
-	if err != nil {
-		return result, err
+	result := operations.GetStatisticsResponse{
+		From:     mergedStatistics.From,
+		To:       mergedStatistics.To,
+		Projects: []operations.GetStatisticsResponseProject{},
 	}
+
+	for projectName, project := range mergedStatistics.Projects {
+		newProject := operations.GetStatisticsResponseProject{
+			Name:     projectName,
+			Services: []operations.GetStatisticsResponseService{},
+		}
+
+		for serviceName, service := range project.Services {
+			newService := operations.GetStatisticsResponseService{
+				Name:                   serviceName,
+				Events:                 []operations.GetStatisticsResponseEvent{},
+				KeptnServiceExecutions: []operations.GetStatisticsResponseKeptnService{},
+			}
+
+			for eventType, eventTypeCount := range service.Events {
+				newService.Events = append(newService.Events, operations.GetStatisticsResponseEvent{
+					Type:  eventType,
+					Count: eventTypeCount,
+				})
+			}
+
+			for keptnServiceName, keptnService := range service.KeptnServiceExecutions {
+				newKeptnService := operations.GetStatisticsResponseKeptnService{
+					Name:       keptnServiceName,
+					Executions: []operations.GetStatisticsResponseEvent{},
+				}
+
+				for eventType, eventTypeCount := range keptnService.Executions {
+					newKeptnService.Executions = append(newKeptnService.Executions, operations.GetStatisticsResponseEvent{
+						Type:  eventType,
+						Count: eventTypeCount,
+					})
+				}
+				newService.KeptnServiceExecutions = append(newService.KeptnServiceExecutions, newKeptnService)
+			}
+			newProject.Services = append(newProject.Services, newService)
+		}
+		result.Projects = append(result.Projects, newProject)
+	}
+
 	return result, nil
 }
 
