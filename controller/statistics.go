@@ -28,11 +28,9 @@ func GetStatisticsBucketInstance() *statisticsBucket {
 	if statisticsBucketInstance == nil {
 		env := config.GetConfig()
 		statisticsBucketInstance = &statisticsBucket{
-			StatisticsRepo: &db.StatisticsMongoDBRepo{
-				DbConnection: &db.MongoDBConnection{},
-			},
-			logger:        keptn.NewLogger("", "", "statistics service"),
-			nextGenEvents: env.NextGenEvents,
+			StatisticsRepo: &db.StatisticsMongoDBRepo{},
+			logger:         keptn.NewLogger("", "", "statistics service"),
+			nextGenEvents:  env.NextGenEvents,
 		}
 
 		statisticsBucketInstance.createNewBucket()

@@ -11,7 +11,7 @@ import (
 const keptnStatsCollection = "keptn-stats"
 
 type StatisticsMongoDBRepo struct {
-	DbConnection    *MongoDBConnection
+	DbConnection    MongoDBConnection
 	statsCollection *mongo.Collection
 }
 
