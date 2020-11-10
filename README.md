@@ -8,6 +8,7 @@ This service provides usage statistics about a Keptn installation.
 |:----------------:|:----------------------------------------:|:----------------------------------------:|
 |       0.7.1      | keptnsandbox/statistics-service:0.1.0    | 1.14 - 1.19                              |
 |       0.7.2      | keptnsandbox/statistics-service:0.1.1    | 1.14 - 1.19                              |
+|       0.7.3      | keptnsandbox/statistics-service:0.2.0    | 1.14 - 1.19                              |
 
 
 ## Deploy in your Kubernetes cluster
