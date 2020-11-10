@@ -11,20 +11,20 @@ import (
 const keptnStatsCollection = "keptn-stats"
 
 type StatisticsMongoDBRepo struct {
-	DbConnection MongoDBConnection
+	DbConnection    MongoDBConnection
+	statsCollection *mongo.Collection
 }
 
 // GetStatistics godoc
-func (s StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.Statistics, error) {
-	collection, err := s.getCollection()
+func (s *StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.Statistics, error) {
+	err := s.getCollection()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	//sortOptions := options.Find().SetSort(bson.D{{"from", 1}}).
 	searchOptions := bson.M{}
 
 	searchOptions["from"] = bson.M{
@@ -34,7 +34,7 @@ func (s StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.S
 		"$lt": to,
 	}
 
-	cur, err := collection.Find(ctx, searchOptions)
+	cur, err := s.statsCollection.Find(ctx, searchOptions)
 	if err != nil {
 		return nil, err
 	}
@@ -58,16 +58,16 @@ func (s StatisticsMongoDBRepo) GetStatistics(from, to time.Time) ([]operations.S
 }
 
 // StoreStatistics godoc
-func (s StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics) error {
-	collection, err := s.getCollection()
+func (s *StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics) error {
+	err := s.getCollection()
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 
-	_, err = collection.InsertOne(ctx, statistics)
+	_, err = s.statsCollection.InsertOne(ctx, statistics)
 	if err != nil {
 		return err
 	}
@@ -76,13 +76,13 @@ func (s StatisticsMongoDBRepo) StoreStatistics(statistics operations.Statistics)
 }
 
 // DeleteStatistics godoc
-func (s StatisticsMongoDBRepo) DeleteStatistics(from, to time.Time) error {
-	collection, err := s.getCollection()
+func (s *StatisticsMongoDBRepo) DeleteStatistics(from, to time.Time) error {
+	err := s.getCollection()
 	if err != nil {
 		return err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 	defer cancel()
 	searchOptions := bson.M{}
 
@@ -93,16 +93,18 @@ func (s StatisticsMongoDBRepo) DeleteStatistics(from, to time.Time) error {
 		"$lt": to.String(),
 	}
 
-	_, err = collection.DeleteMany(ctx, searchOptions)
+	_, err = s.statsCollection.DeleteMany(ctx, searchOptions)
 	return err
 }
 
-func (s StatisticsMongoDBRepo) getCollection() (*mongo.Collection, error) {
+func (s *StatisticsMongoDBRepo) getCollection() error {
 	err := s.DbConnection.EnsureDBConnection()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	collection := s.DbConnection.Client.Database(databaseName).Collection(keptnStatsCollection)
-	return collection, nil
+	if s.statsCollection == nil {
+		s.statsCollection = s.DbConnection.Client.Database(databaseName).Collection(keptnStatsCollection)
+	}
+	return nil
 }

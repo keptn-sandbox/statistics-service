@@ -59,6 +59,8 @@ func GetStatistics(c *gin.Context) {
 		})
 		return
 	}
+	payload.From = params.From
+	payload.To = params.To
 
 	c.JSON(http.StatusOK, payload)
 }
@@ -72,7 +74,7 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 	if params.From.After(cutoffTime) {
 		// case 1: time frame within "in-memory" interval (e.g. last 30 minutes)
 		// -> return in-memory object
-		mergedStatistics = *sb.GetStatistics()
+		mergedStatistics = sb.GetStatistics()
 
 	} else {
 		var statistics []operations.Statistics
@@ -91,7 +93,7 @@ func getStatistics(params *operations.GetStatisticsParams, sb controller.Statist
 			if statistics == nil {
 				statistics = []operations.Statistics{}
 			}
-			statistics = append(statistics, *sb.GetStatistics())
+			statistics = append(statistics, sb.GetStatistics())
 		}
 
 		mergedStatistics = operations.Statistics{
