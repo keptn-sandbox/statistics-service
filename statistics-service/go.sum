@@ -229,6 +229,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
+github.com/keptn-sandbox/statistics-service v0.0.0-20201111084220-7429b9b26e2b h1:P7rIXJkB2fAWRO7LdgbbooTk192xrGBdit0HKoKuDIQ=
+github.com/keptn-sandbox/statistics-service v0.0.0-20201111084220-7429b9b26e2b/go.mod h1:sgNR4BYDjZ0ywMHoHhoNgykmQo34WWvWEKh0aFTbp7s=
 github.com/keptn/go-utils v0.7.1 h1:qDViu8qhijdh7QK1+k+i4hEDtTwkHo2PxsomxKvxlpg=
 github.com/keptn/go-utils v0.7.1/go.mod h1:hf2FU6JFuOzLP5rEAlA1/XnNS28pDZbVfxDESeQsq1g=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
