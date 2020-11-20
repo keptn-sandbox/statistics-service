@@ -2,8 +2,8 @@ package controller
 
 import (
 	"github.com/go-test/deep"
-	"github.com/keptn-sandbox/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/operations"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"os"
 	"strconv"
