@@ -2,7 +2,7 @@ package db
 
 import (
 	"errors"
-	"github.com/keptn-sandbox/statistics-service/operations"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	"time"
 )
 

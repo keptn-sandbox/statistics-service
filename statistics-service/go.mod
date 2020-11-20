@@ -1,4 +1,4 @@
-module github.com/keptn-sandbox/statistics-service
+module github.com/keptn-sandbox/statistics-service/statistics-service
 
 go 1.14
 
@@ -15,6 +15,7 @@ require (
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/keptn-sandbox/statistics-service v0.0.0-20201111084220-7429b9b26e2b // indirect
 	github.com/keptn/go-utils v0.7.1
 	github.com/mailru/easyjson v0.7.6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

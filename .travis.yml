@@ -40,9 +40,21 @@ before_install:
   - sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
 jobs:
   include:
+    - stage: Unit tests # golang
+      os: linux
+      script:
+        - set -e # fail the whole script whenever any command fails
+        - |
+          cd statistics-service
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          cd ..
+        - |
+          cd cli
+          go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+          cd ..
     - stage: Build Images (all branches)
       script:
-        - docker build . -t "${IMAGE}:${GIT_SHA}" --build-arg version=${VERSION} || travis_terminate -1
+        - docker build ./statistics-service -t "${IMAGE}:${GIT_SHA}" --build-arg version=${VERSION} || travis_terminate -1
         - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}"
         - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}-${DATE}"
         - docker tag "${IMAGE}:${GIT_SHA}" "${IMAGE}:${VERSION}-${DATE}.${TIME}"
