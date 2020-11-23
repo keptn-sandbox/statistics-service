@@ -34,7 +34,7 @@ before_install:
   - export DATE="$(date +'%Y%m%d')"
   - export TIME="$(date +'%H%M')"
   # write a manifest file
-  - ./docker/writeManifest.sh
+  - ./statistics-service/docker/writeManifest.sh
   - cat ./docker/MANIFEST
   # uncomment certain lines from Dockerfile that are for travis builds only
   - sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
