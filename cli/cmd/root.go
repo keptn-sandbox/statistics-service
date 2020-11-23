@@ -133,7 +133,7 @@ keptn-usage-stats
 		}
 
 		for _, file := range fileInfos {
-			if statisticsStruct, err := readStatisticsFile(file.Name()); err == nil && statisticsStruct != nil {
+			if statisticsStruct, err := readStatisticsFile(folder + "/" + file.Name()); err == nil && statisticsStruct != nil {
 				statisticsFiles[file.Name()] = statisticsStruct
 			} else if err != nil {
 				fmt.Println("not adding file " + file.Name() + ": " + err.Error())
@@ -183,7 +183,7 @@ func printSubStats(s *statistics) {
 	fmt.Println("-------------------------------------------------")
 	for keptnService, executions := range s.keptnServiceExecutions {
 		for eventType, execution := range executions.eventTypeCount {
-			fmt.Println(fmt.Sprintf("- %s: %d %s", keptnService, execution, eventType))
+			fmt.Println(fmt.Sprintf("- %s: \t\t %d \t %s", keptnService, execution, eventType))
 		}
 	}
 	fmt.Println("")
@@ -227,6 +227,8 @@ func createSeparatedStatistics(statisticsFiles map[string]*stats.GetStatisticsRe
 				subStatistics:          map[string]*statistics{},
 			},
 			perProjectStatistics: map[string]*statistics{},
+			from:                 stats.From,
+			to:                   stats.To,
 		}
 		mergeStatisticsResponseIntoStatisticsOutput(stats, newSeparateOutput)
 		result = append(result, newSeparateOutput)
@@ -273,6 +275,7 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 						continue
 					}
 					statsOutput.overallStatistics.automationUnits = statsOutput.overallStatistics.automationUnits + eventTypeExecution.Count
+
 					if statsOutput.overallStatistics.keptnServiceExecutions[execution.Name] == nil {
 						statsOutput.overallStatistics.keptnServiceExecutions[execution.Name] = &keptnServiceExecution{
 							eventTypeCount: map[string]int{},
@@ -280,7 +283,6 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 					}
 					statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] =
 						statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] + eventTypeExecution.Count
-					statsOutput.overallStatistics.automationUnits = statsOutput.overallStatistics.automationUnits + eventTypeExecution.Count
 
 					if isProjectGranularity() {
 						statsOutput.perProjectStatistics[project.Name].automationUnits = statsOutput.perProjectStatistics[project.Name].automationUnits + eventTypeExecution.Count
