@@ -26,7 +26,7 @@ import (
 	"strings"
 	"time"
 
-	stats "github.com/keptn-sandbox/statistics-service/operations"
+	stats "github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 )
 
 type statisticsOutput struct {
