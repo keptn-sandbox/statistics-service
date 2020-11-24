@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MANIFEST_FILE=./docker/MANIFEST
+MANIFEST_FILE=./statistics-service/docker/MANIFEST
 REPO_URL=https://github.com/$TRAVIS_REPO_SLUG
 
 sed -i 's~MANIFEST_REPOSITORY~'"$REPO_URL"'~' ${MANIFEST_FILE}
