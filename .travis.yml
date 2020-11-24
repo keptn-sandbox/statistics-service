@@ -35,9 +35,9 @@ before_install:
   - export TIME="$(date +'%H%M')"
   # write a manifest file
   - ./statistics-service/docker/writeManifest.sh
-  - cat ./docker/MANIFEST
+  - cat ./statistics-service/docker/MANIFEST
   # uncomment certain lines from Dockerfile that are for travis builds only
-  - sed -i '/#travis-uncomment/s/^#travis-uncomment //g' Dockerfile
+  - sed -i '/#travis-uncomment/s/^#travis-uncomment //g' ./statistics-service/Dockerfile
 jobs:
   include:
     - stage: Unit tests # golang
