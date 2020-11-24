@@ -29,6 +29,25 @@ import (
 	stats "github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 )
 
+type exportedStatisticsService struct {
+	Name       string `json:"name"`
+	Executions int    `json:"Executions"`
+	EventType  string `json:"eventType"`
+}
+
+type exportedStatisticsSummary struct {
+	Granularity       string                      `json:"granularity"`
+	Executions        int                         `json:"executions"`
+	ServiceExecutions []exportedStatisticsService `json:"serviceExecutions"`
+	Projects          []exportedStatisticsSummary `json:"projects,omitempty"`
+	Services          []exportedStatisticsSummary `json:"services,omitempty"`
+}
+
+type exportedStatisticsOutput struct {
+	Timeframe string                    `json:"timeframe"`
+	Summary   exportedStatisticsSummary `json:"summary"`
+}
+
 type statisticsOutput struct {
 	from                 time.Time
 	to                   time.Time
@@ -72,6 +91,7 @@ var (
 	includeTriggersArr []string
 	export             string
 	separator          string
+	outputFile         string
 )
 
 var allowedPeriods = []string{"separated", "aggregated"}
@@ -82,6 +102,12 @@ var allowedSeparator = []string{",", ";"}
 const separatedPeriod = "separated"
 const aggregatedPeriod = "aggregated"
 
+const exportJSON = "json"
+const exportCSV = "csv"
+
+const separatorComma = ","
+const separatorSemicolon = ";"
+
 // rootCmd represents the root command
 var rootCmd = &cobra.Command{
 	Use:   "keptn-usage-stats",
@@ -91,7 +117,7 @@ var rootCmd = &cobra.Command{
 keptn-usage-stats
    --folder=./usage-statistics-xyz 
    --period=separated
-   --granularity=overall,project 
+   --Granularity=overall,project 
    --includeEvents=deployment-finished,tests-finished,evaluation-done 
    --includeServices=all`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -152,10 +178,174 @@ keptn-usage-stats
 			statisticsArr = createAggregatedStatistics(statisticsFiles)
 		}
 
+		// print the statistics
 		for _, s := range statisticsArr {
 			printStats(s)
 		}
+
+		// export the statistics to .json or .csv
+		for index, s := range statisticsArr {
+			exportStats(s, index)
+		}
+
 	},
+}
+
+func exportStats(s *statisticsOutput, index int) {
+	if export == exportJSON {
+		exportToJSON(s, index)
+	} else if export == exportCSV {
+		exportToCSV(s, index)
+	}
+}
+
+func exportToCSV(s *statisticsOutput, index int) {
+	headers := []string{}
+	values := []string{}
+
+	headers = append(headers, "Timeframe")
+	values = append(values, fmt.Sprintf("%s - %s", s.from.String(), s.to.String()))
+
+	headers, values = generateSubStatsCSV(&s.overallStatistics, headers, values)
+
+	if isProjectGranularity() {
+		for _, projectStat := range s.perProjectStatistics {
+			headers, values = generateSubStatsCSV(projectStat, headers, values)
+			if isServiceGranularity() {
+				for _, svcStat := range projectStat.subStatistics {
+					headers, values = generateSubStatsCSV(svcStat, headers, values)
+				}
+			}
+		}
+	}
+	headersLine := strings.Join(headers, separator)
+	valuesLine := strings.Join(values, separator)
+
+	fileName := getIndexedFileName(outputFile, index)
+
+	if !strings.HasSuffix(fileName, ".csv") {
+		fileName = fileName + ".csv"
+	} else if strings.HasSuffix(fileName, ".json") {
+		fileName = strings.TrimSuffix(fileName, ".json")
+		fileName = fileName + ".csv"
+	}
+
+	fileContent := fmt.Sprintf("%s\n%s", headersLine, valuesLine)
+	writeFile(fileName, fileContent)
+}
+
+func getIndexedFileName(outputFile string, index int) string {
+	if index == 0 {
+		return outputFile
+	}
+	lastIndex := strings.LastIndex(outputFile, ".")
+	if lastIndex == -1 {
+		outputFile = fmt.Sprintf("%s_%d", outputFile, index)
+	} else {
+		outputFile = outputFile[:lastIndex] + fmt.Sprintf("_%d", index) + outputFile[lastIndex+1:]
+	}
+	return outputFile
+}
+
+func writeFile(outputFile, fileContent string) {
+	if _, err := os.Stat(outputFile); os.IsExist(err) {
+		if err := os.Remove(outputFile); err != nil {
+			fmt.Println(fmt.Sprintf("could not delete file %s: %s", outputFile, err.Error()))
+		}
+	}
+	if err := ioutil.WriteFile(outputFile, []byte(fileContent), 0664); err != nil {
+		fmt.Println(fmt.Sprintf("could not write file %s: %s", outputFile, err.Error()))
+	}
+}
+
+func generateSubStatsCSV(s *statistics, headers, values []string) ([]string, []string) {
+	headers = append(headers, s.name)
+	values = append(values, fmt.Sprintf("%d", s.automationUnits))
+
+	for keptnServiceName, keptnServiceExecution := range s.keptnServiceExecutions {
+		for eventType, executions := range keptnServiceExecution.eventTypeCount {
+			headers = append(headers, fmt.Sprintf("%s (%s)", keptnServiceName, eventType))
+			values = append(values, fmt.Sprintf("%d", executions))
+		}
+	}
+
+	return headers, values
+}
+
+func exportToJSON(s *statisticsOutput, index int) {
+
+	result := exportedStatisticsOutput{
+		Timeframe: fmt.Sprintf("%s - %s", s.from, s.to),
+		Summary: exportedStatisticsSummary{
+			Granularity:       s.overallStatistics.name,
+			Executions:        s.overallStatistics.automationUnits,
+			ServiceExecutions: []exportedStatisticsService{},
+			Projects:          []exportedStatisticsSummary{},
+			Services:          []exportedStatisticsSummary{},
+		},
+	}
+
+	appendKeptnServiceExecutions(&s.overallStatistics, &result.Summary)
+
+	if isProjectGranularity() {
+		for _, project := range s.perProjectStatistics {
+			newExportedProjectStats := exportedStatisticsSummary{
+				Granularity:       project.name,
+				Executions:        project.automationUnits,
+				ServiceExecutions: []exportedStatisticsService{},
+				Projects:          nil,
+				Services:          []exportedStatisticsSummary{},
+			}
+
+			appendKeptnServiceExecutions(project, &newExportedProjectStats)
+
+			if isServiceGranularity() {
+				for _, svc := range project.subStatistics {
+					newExportedServiceStats := exportedStatisticsSummary{
+						Granularity:       svc.name,
+						Executions:        svc.automationUnits,
+						ServiceExecutions: []exportedStatisticsService{},
+						Projects:          nil,
+						Services:          []exportedStatisticsSummary{},
+					}
+
+					appendKeptnServiceExecutions(svc, &newExportedServiceStats)
+					newExportedProjectStats.Services = append(newExportedProjectStats.Services, newExportedServiceStats)
+				}
+			}
+			result.Summary.Projects = append(result.Summary.Projects, newExportedProjectStats)
+		}
+	}
+
+	fileContent, err := json.MarshalIndent(&result, "", fmt.Sprintf("  "))
+	if err != nil {
+		fmt.Println("could not generate json file content: " + err.Error())
+		os.Exit(1)
+	}
+
+	fileName := getIndexedFileName(outputFile, index)
+	if !strings.HasSuffix(fileName, ".json") {
+		fileName = fileName + ".json"
+	} else if strings.HasSuffix(fileName, ".csv") {
+		fileName = strings.TrimSuffix(fileName, ".csv")
+		fileName = fileName + ".json"
+	}
+
+	writeFile(fileName, string(fileContent))
+}
+
+func appendKeptnServiceExecutions(s *statistics, summary *exportedStatisticsSummary) {
+	for keptnServiceName, serviceExecution := range s.keptnServiceExecutions {
+		for eventType, count := range serviceExecution.eventTypeCount {
+			keptnServiceExecs := exportedStatisticsService{
+				Name:       keptnServiceName,
+				Executions: count,
+				EventType:  eventType,
+			}
+
+			summary.ServiceExecutions = append(summary.ServiceExecutions, keptnServiceExecs)
+		}
+	}
 }
 
 func printStats(s *statisticsOutput) {
@@ -388,7 +578,7 @@ func checkGranularity() error {
 	granularityArr = strings.Split(strings.TrimSpace(strings.ToLower(granularity)), ",")
 	for _, gr := range granularityArr {
 		if !checkAllowedValues(gr, allowedGranularities) {
-			return fmt.Errorf("unsupported value '%s' for granularity. allowed values are: %v", granularity, allowedGranularities)
+			return fmt.Errorf("unsupported value '%s' for Granularity. allowed values are: %v", granularity, allowedGranularities)
 		}
 	}
 	return nil
@@ -444,11 +634,12 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&period, "period", "p", "separated", "The period under consideration, one option of: [separated, aggregated]")
 	rootCmd.PersistentFlags().StringVarP(&granularity, "granularity", "g", "overall", "The level of details, list of [overall, project, service], default is 'overall'")
 	rootCmd.PersistentFlags().StringVarP(&includeEvents, "includeEvents", "", "all", "List of events that define an automation unit, default is 'all'")
-	rootCmd.PersistentFlags().StringVarP(&includeServices, "includeServices", "", "all", "List of services that define an automation unit, default is 'all'")
-	rootCmd.PersistentFlags().StringVarP(&excludeProjects, "excludeProjects", "", "", "List of project names that are excluded from the summary")
+	rootCmd.PersistentFlags().StringVarP(&includeServices, "includeServices", "", "all", "List of Services that define an automation unit, default is 'all'")
+	rootCmd.PersistentFlags().StringVarP(&excludeProjects, "excludeProjects", "", "", "List of project names that are excluded from the Summary")
 	rootCmd.PersistentFlags().StringVarP(&includeTriggers, "includeTriggers", "", "all", "list of sequence triggers: [configuration-change, problem.open, evaluation-started]")
 	rootCmd.PersistentFlags().StringVarP(&export, "export", "", "json", "The format to export the statistics, supported are [json, csv]")
 	rootCmd.PersistentFlags().StringVarP(&separator, "separator", "", ",", "The separator used for the CSV exporter, allowed values are ',' or ';'")
+	rootCmd.PersistentFlags().StringVarP(&outputFile, "output", "o", "stats", "The Name of the output file")
 	cobra.OnInitialize(initConfig)
 }
 
@@ -475,7 +666,7 @@ func initConfig() {
 			er(err)
 		}
 
-		// Search config in home directory with name ".cobra" (without extension).
+		// Search config in home directory with Name ".cobra" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".cobra")
 	}
