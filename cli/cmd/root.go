@@ -235,9 +235,8 @@ func exportToCSV(s *statisticsOutput, index int) {
 }
 
 func getIndexedFileName(outputFile string, index int) string {
-	if index == 0 {
-		return outputFile
-	}
+	index = index + 1
+
 	lastIndex := strings.LastIndex(outputFile, ".")
 	if lastIndex == -1 {
 		outputFile = fmt.Sprintf("%s_%d", outputFile, index)
