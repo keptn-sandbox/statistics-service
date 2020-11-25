@@ -163,7 +163,7 @@ Timeframe,Overall: stats2.json > Keptn,gatekeeper-service (sh.keptn.event.approv
 ```
 
 
-If both files should be **combined into one csv file**, the `--period=aggregated` flag can be used:
+If both files should be **combined into one csv file** the `--period=aggregated` flag can be used:
 
 ```
 $ keptn-usage-stats --folder=./example_payloads --granularity=service --export=csv --period=aggregated
