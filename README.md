@@ -13,10 +13,22 @@ This service provides usage statistics about a Keptn installation.
 
 ## Deploy in your Kubernetes cluster
 
-To deploy the current version of the *shipyard-controller* in your Keptn Kubernetes cluster, use the files `deploy/pvc.yaml` and `deploy/service.yaml` from this repository and apply it.
+Please note that the installation of the **statistics-service** differs slightly, depending on your installed Keptn version. Depending on your installed Keptn version, please follow the instructions below. 
+
+### For Keptn versions < 0.8.0
+
+To deploy the current version of the *statistics-service* in your Keptn Kubernetes cluster, use the file `deploy/service.yaml` from this repository and apply it.
 
 ```console
 kubectl apply -f deploy/service.yaml -n keptn
+```
+
+### For Keptn versions >= 0.8.0
+
+To deploy the current version of the *statistics-service* in your Keptn Kubernetes cluster, use the file `deploy/service_keptn_080.yaml` from this repository and apply it.
+
+```console
+kubectl apply -f deploy/service_keptn_080.yaml -n keptn
 ```
 
 ## Delete in your Kubernetes cluster
