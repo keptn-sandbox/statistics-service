@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/keptn-sandbox/statistics-service/config"
 	"github.com/keptn-sandbox/statistics-service/controller"
 	"github.com/keptn-sandbox/statistics-service/db"
 	"github.com/keptn-sandbox/statistics-service/operations"
@@ -130,6 +131,18 @@ func convertToGetStatisticsResponse(mergedStatistics operations.Statistics) (ope
 					Type:  eventType,
 					Count: eventTypeCount,
 				})
+			}
+
+			env := config.GetConfig()
+			if env.NextGenEvents {
+				newService.ExecutedSequences = service.ExecutedSequences
+				newService.ExecutedSequencesPerType = []operations.GetStatisticsResponseEvent{}
+				for eventType, count := range service.ExecutedSequencesPerType {
+					newService.ExecutedSequencesPerType = append(newService.ExecutedSequencesPerType, operations.GetStatisticsResponseEvent{
+						Type:  eventType,
+						Count: count,
+					})
+				}
 			}
 
 			for keptnServiceName, keptnService := range service.KeptnServiceExecutions {
