@@ -135,7 +135,6 @@ func convertToGetStatisticsResponse(mergedStatistics operations.Statistics) (ope
 
 			env := config.GetConfig()
 			if env.NextGenEvents {
-				newService.ExecutedSequences = service.ExecutedSequences
 				newService.ExecutedSequencesPerType = []operations.GetStatisticsResponseEvent{}
 				for eventType, count := range service.ExecutedSequencesPerType {
 					newService.ExecutedSequencesPerType = append(newService.ExecutedSequencesPerType, operations.GetStatisticsResponseEvent{

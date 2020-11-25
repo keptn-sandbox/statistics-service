@@ -37,9 +37,9 @@ type GetStatisticsResponseService struct {
 	// Events godoc
 	Events []GetStatisticsResponseEvent `json:"events" bson:"events"`
 	// KeptnServiceExecutions godoc
-	KeptnServiceExecutions   []GetStatisticsResponseKeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
-	ExecutedSequences        int                                 `json:"executedSequences,omitempty"`
-	ExecutedSequencesPerType []GetStatisticsResponseEvent        `json:"executedSequencesPerType,omitempty" bson:"executedSequencesPerType"`
+	KeptnServiceExecutions []GetStatisticsResponseKeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+	// ExecutedSequencesPerType godoc
+	ExecutedSequencesPerType []GetStatisticsResponseEvent `json:"executedSequencesPerType,omitempty" bson:"executedSequencesPerType"`
 }
 
 // GetStatisticsResponseEvent godoc+
