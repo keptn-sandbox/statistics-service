@@ -391,7 +391,7 @@ func createAggregatedStatistics(statisticsFiles map[string]*stats.GetStatisticsR
 		perProjectStatistics: map[string]*statistics{},
 	}
 
-	to, from := getTimeFrame(statisticsFiles)
+	from, to := getTimeFrame(statisticsFiles)
 	statsOutput.from = from
 	statsOutput.to = to
 
