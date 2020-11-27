@@ -18,13 +18,14 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mitchellh/go-homedir"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/mitchellh/go-homedir"
+	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 
 	stats "github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 )
@@ -117,7 +118,7 @@ var rootCmd = &cobra.Command{
 keptn-usage-stats
    --folder=./usage-statistics-xyz 
    --period=separated
-   --Granularity=overall,project 
+   --granularity=overall,project 
    --includeEvents=deployment-finished,tests-finished,evaluation-done 
    --includeServices=all`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -577,7 +578,7 @@ func checkGranularity() error {
 	granularityArr = strings.Split(strings.TrimSpace(strings.ToLower(granularity)), ",")
 	for _, gr := range granularityArr {
 		if !checkAllowedValues(gr, allowedGranularities) {
-			return fmt.Errorf("unsupported value '%s' for Granularity. allowed values are: %v", granularity, allowedGranularities)
+			return fmt.Errorf("unsupported value '%s' for granularity. allowed values are: %v", granularity, allowedGranularities)
 		}
 	}
 	return nil
@@ -635,10 +636,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&includeEvents, "includeEvents", "", "all", "List of events that define an automation unit, default is 'all'")
 	rootCmd.PersistentFlags().StringVarP(&includeServices, "includeServices", "", "all", "List of Services that define an automation unit, default is 'all'")
 	rootCmd.PersistentFlags().StringVarP(&excludeProjects, "excludeProjects", "", "", "List of project names that are excluded from the Summary")
-	rootCmd.PersistentFlags().StringVarP(&includeTriggers, "includeTriggers", "", "all", "list of sequence triggers: [configuration-change, problem.open, evaluation-started]")
+	rootCmd.PersistentFlags().StringVarP(&includeTriggers, "includeTriggers", "", "all", "List of sequence triggers: [configuration-change, problem.open, evaluation-started] - supported with Keptn >0.8")
 	rootCmd.PersistentFlags().StringVarP(&export, "export", "", "json", "The format to export the statistics, supported are [json, csv]")
 	rootCmd.PersistentFlags().StringVarP(&separator, "separator", "", ",", "The separator used for the CSV exporter, allowed values are ',' or ';'")
-	rootCmd.PersistentFlags().StringVarP(&outputFile, "output", "o", "stats", "The Name of the output file")
+	rootCmd.PersistentFlags().StringVarP(&outputFile, "output", "o", "stats", "The name of the output file")
 	cobra.OnInitialize(initConfig)
 }
 

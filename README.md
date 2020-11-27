@@ -76,19 +76,47 @@ variable `AGGREGATION_INTERVAL_SECONDS` to your desired value.
 
 ## Using the CLI
 
+
 The `keptn-usage-stats` CLI allows to aggregate a set of files containing response payloads from the statistics-service and present those in a user friendly manner.
 
-The CLI knows the following flags:
-- `--folder (-f):` The folder containing the JSON files exported from the statistics-service.
-- `--period (-p):` The period under consideration, one option of: [separated, aggregated]
-   - `separated` - Keeps the files separated and provides the summary for each file.
-   - `aggregated` - Aggregates all files to a single summary.
-- `--granularity (-g):` The level of details, list of [overall, project, service], default is `overall`
-- `--includeEvents:` List of events that define an automation unit, default is `all`
-- `--includeServices:` List of services that are considered for an automation unit, default is `all`
-- `--excludeProjects:` List of project names that are excluded from the summary
-- `--export:` The format to export the statistics, supported are [json, csv]
-- `--separator:` The separator used for the CSV exporter [, or ;]
+* To build the CLI locally: 
+```
+go build -o keptn-usage-stats
+```
+
+* How to use the tool: 
+
+```
+keptn-usage-stats --help
+```
+
+
+```
+Generates an overview of Keptn usage statistics, based on a set of input files provided to the command. Example:
+
+keptn-usage-stats
+   --folder=./usage-statistics-xyz
+   --period=separated
+   --granularity=overall,project
+   --includeEvents=deployment-finished,tests-finished,evaluation-done
+   --includeServices=all
+
+Usage:
+  keptn-usage-stats [flags]
+
+Flags:
+      --excludeProjects string   List of project names that are excluded from the Summary
+      --export string            The format to export the statistics, supported are [json, csv] (default "json")
+  -f, --folder string            The folder containing the JSON files exported from the statistics-service
+  -g, --granularity string       The level of details, list of [overall, project, service], default is 'overall' (default "overall")
+  -h, --help                     help for keptn-usage-stats
+      --includeEvents string     List of events that define an automation unit, default is 'all' (default "all")
+      --includeServices string   List of Services that define an automation unit, default is 'all' (default "all")
+      --includeTriggers string   list of sequence triggers: [configuration-change, problem.open, evaluation-started] (default "all")
+  -o, --output string            The Name of the output file (default "stats")
+  -p, --period string            The period under consideration, one option of: [separated, aggregated] (default "separated")
+      --separator string         The separator used for the CSV exporter, allowed values are ',' or ';' (default ",")
+```
 
 ### Examples
 
