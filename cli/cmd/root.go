@@ -30,6 +30,15 @@ import (
 	stats "github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 )
 
+<<<<<<< HEAD
+=======
+type csvColumn struct {
+	key         string
+	displayName string
+	values      map[int]string
+}
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 type exportedStatisticsService struct {
 	Name       string `json:"name"`
 	Executions int    `json:"Executions"`
@@ -109,6 +118,18 @@ const exportCSV = "csv"
 const separatorComma = ","
 const separatorSemicolon = ";"
 
+<<<<<<< HEAD
+=======
+var csvColumns = []csvColumn{}
+var csvColumnMapping = map[string]int{}
+var columnIndex = 0
+
+var csvRows = [][]string{}
+
+const overallKeptnCSVColKey = "overall:keptn"
+const overallKeptnTimeframeCSVColKey = "timeframe"
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 // rootCmd represents the root command
 var rootCmd = &cobra.Command{
 	Use:   "keptn-usage-stats",
@@ -173,10 +194,29 @@ keptn-usage-stats
 		}
 
 		var statisticsArr []*statisticsOutput
+<<<<<<< HEAD
 		if period == separatedPeriod {
 			statisticsArr = createSeparatedStatistics(statisticsFiles)
 		} else {
 			statisticsArr = createAggregatedStatistics(statisticsFiles)
+=======
+		var mergedStatistics []*statisticsOutput
+
+		for range statisticsFiles {
+			csvRows = append(csvRows, []string{})
+		}
+		if period == separatedPeriod {
+			// get the merged statistics as well to know which columns we are going to have in the CSV file
+			mergedStatistics = createAggregatedStatistics(statisticsFiles)
+			createCSVColumns(mergedStatistics[0])
+
+			statisticsArr = createSeparatedStatistics(statisticsFiles)
+			createCSVRows(statisticsArr)
+		} else {
+			statisticsArr = createAggregatedStatistics(statisticsFiles)
+			createCSVColumns(statisticsArr[0])
+			createCSVRows(statisticsArr)
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 		}
 
 		// print the statistics
@@ -184,6 +224,7 @@ keptn-usage-stats
 			printStats(s)
 		}
 
+<<<<<<< HEAD
 		// export the statistics to .json or .csv
 		for index, s := range statisticsArr {
 			exportStats(s, index)
@@ -200,6 +241,208 @@ func exportStats(s *statisticsOutput, index int) {
 	}
 }
 
+=======
+		if export == exportCSV {
+			exportToCSVMergeAllFiles(statisticsArr)
+			return
+		}
+
+		// export the statistics to .json or .csv
+		for index, s := range statisticsArr {
+			exportToJSON(s, index)
+		}
+	},
+}
+
+func createCSVRows(stats []*statisticsOutput) {
+	for index, s := range stats {
+
+		csvRows[index][csvColumnMapping[overallKeptnCSVColKey]] = fmt.Sprintf("%d", s.overallStatistics.automationUnits)
+
+		csvRows[index][csvColumnMapping[overallKeptnTimeframeCSVColKey]] = fmt.Sprintf("%s - %s", s.from.String(), s.to.String())
+
+		for keptnServiceName, execution := range s.overallStatistics.keptnServiceExecutions {
+			for eventType, count := range execution.eventTypeCount {
+				overallKeptnExecutionKey, _ := getOverallKeptnExecutionColNames(keptnServiceName, eventType)
+				csvRows[index][csvColumnMapping[overallKeptnExecutionKey]] = fmt.Sprintf("%d", count)
+			}
+		}
+
+		for projectName, projectStats := range s.perProjectStatistics {
+			projectOverallColumnKey, _ := getProjectColNames(projectName)
+
+			csvRows[index][csvColumnMapping[projectOverallColumnKey]] = fmt.Sprintf("%d", projectStats.automationUnits)
+
+			for keptnServiceName, execution := range projectStats.keptnServiceExecutions {
+				for eventType, count := range execution.eventTypeCount {
+					projectKeptnExecutionKey, _ := getProjectKeptnExecutionColNames(projectName, keptnServiceName, eventType)
+					csvRows[index][csvColumnMapping[projectKeptnExecutionKey]] = fmt.Sprintf("%d", count)
+				}
+			}
+
+			for svcName, svcStats := range projectStats.subStatistics {
+				serviceOverallColumnKey, _ := getServiceColNames(projectName, svcName)
+
+				csvRows[index][csvColumnMapping[serviceOverallColumnKey]] = fmt.Sprintf("%d", svcStats.automationUnits)
+
+				for keptnServiceName, execution := range svcStats.keptnServiceExecutions {
+					for eventType, count := range execution.eventTypeCount {
+						serviceKeptnExecutionKey, _ := getSvcExecutionColNames(projectName, svcName, keptnServiceName, eventType)
+						csvRows[index][csvColumnMapping[serviceKeptnExecutionKey]] = fmt.Sprintf("%d", count)
+					}
+				}
+			}
+		}
+	}
+}
+
+func createCSVColumns(s *statisticsOutput) {
+	addColumn(overallKeptnTimeframeCSVColKey, "Timeframe")
+	addColumn(overallKeptnCSVColKey, "Overall: Keptn")
+
+	for keptnServiceName, execution := range s.overallStatistics.keptnServiceExecutions {
+		for eventType, _ := range execution.eventTypeCount {
+			overallKeptnExecutionKey, overallKeptnExecutionDisplayName := getOverallKeptnExecutionColNames(keptnServiceName, eventType)
+			addColumn(overallKeptnExecutionKey, overallKeptnExecutionDisplayName)
+		}
+	}
+
+	for projectName, projectStats := range s.perProjectStatistics {
+		projectOverallColumnKey, projectOverallDisplayName := getProjectColNames(projectName)
+
+		addColumn(projectOverallColumnKey, projectOverallDisplayName)
+
+		for keptnServiceName, execution := range projectStats.keptnServiceExecutions {
+			for eventType, _ := range execution.eventTypeCount {
+				projectKeptnExecutionKey, projectKeptnExecutionDisplayName := getProjectKeptnExecutionColNames(projectName, keptnServiceName, eventType)
+				addColumn(projectKeptnExecutionKey, projectKeptnExecutionDisplayName)
+			}
+		}
+
+		for svcName, svcStats := range projectStats.subStatistics {
+			serviceOverallColumnKey, serviceOverallDisplayName := getServiceColNames(projectName, svcName)
+
+			addColumn(serviceOverallColumnKey, serviceOverallDisplayName)
+
+			for keptnServiceName, execution := range svcStats.keptnServiceExecutions {
+				for eventType, _ := range execution.eventTypeCount {
+					serviceKeptnExecutionKey, serviceKeptnExecutionDisplayName := getSvcExecutionColNames(projectName, svcName, keptnServiceName, eventType)
+					addColumn(serviceKeptnExecutionKey, serviceKeptnExecutionDisplayName)
+				}
+			}
+		}
+	}
+}
+
+func getSvcExecutionColNames(projectName string, svcName string, keptnServiceName string, eventType string) (string, string) {
+	serviceKeptnExecutionKey := "service: " + projectName + ":" + svcName + ":" + keptnServiceName + ":" + eventType
+	serviceKeptnExecutionDisplayName := keptnServiceName + " (" + eventType + ")"
+	return serviceKeptnExecutionKey, serviceKeptnExecutionDisplayName
+}
+
+func getServiceColNames(projectName string, svcName string) (string, string) {
+	serviceOverallColumnKey := "Service: Keptn > " + projectName + " > " + svcName
+	serviceOverallDisplayName := "Service: Keptn > " + projectName + " > " + svcName
+	return serviceOverallColumnKey, serviceOverallDisplayName
+}
+
+func getProjectKeptnExecutionColNames(projectName string, keptnServiceName string, eventType string) (string, string) {
+	projectKeptnExecutionKey := "project: " + projectName + ":" + keptnServiceName + ":" + eventType
+	projectKeptnExecutionDisplayName := keptnServiceName + " (" + eventType + ")"
+	return projectKeptnExecutionKey, projectKeptnExecutionDisplayName
+}
+
+func getProjectColNames(projectName string) (string, string) {
+	projectOverallColumnKey := "Project: Keptn > " + projectName
+	projectOverallDisplayName := "Project: Keptn > " + projectName
+	return projectOverallColumnKey, projectOverallDisplayName
+}
+
+func getOverallKeptnExecutionColNames(keptnServiceName string, eventType string) (string, string) {
+	overallKeptnExecutionKey := "overall: " + keptnServiceName + ":" + eventType
+	overallKeptnExecutionDisplayName := keptnServiceName + " (" + eventType + ")"
+	return overallKeptnExecutionKey, overallKeptnExecutionDisplayName
+}
+
+func exportToCSVMergeAllFiles(s []*statisticsOutput) {
+	columns := map[string]*csvColumn{}
+
+	columns["timeframe"] = &csvColumn{
+		key:         "timeframe",
+		displayName: "Timeframe",
+		values:      map[int]string{},
+	}
+
+	for index, stats := range s {
+		columns = generateSubStatsForMergedCSV(index, &stats.overallStatistics, "overall", columns)
+		columns["timeframe"].values[index] = stats.from.String() + " - " + stats.to.String()
+
+		if isProjectGranularity() {
+			for _, projectStat := range stats.perProjectStatistics {
+				columns = generateSubStatsForMergedCSV(index, projectStat, projectStat.name, columns)
+				if isServiceGranularity() {
+					for _, svcStat := range projectStat.subStatistics {
+						columns = generateSubStatsForMergedCSV(index, svcStat, projectStat.name+"-"+svcStat.name, columns)
+					}
+				}
+			}
+		}
+	}
+
+	headers := []string{}
+
+	for _, column := range csvColumns {
+		headers = append(headers, column.displayName)
+	}
+	headersLine := strings.Join(headers, separator)
+	fileContent := fmt.Sprintf("%s\n", headersLine)
+
+	for _, row := range csvRows {
+		rowLine := strings.Join(row, separator)
+		fileContent = fileContent + fmt.Sprintf("%s\n", rowLine)
+	}
+
+	fileName := outputFile
+
+	if !strings.HasSuffix(fileName, ".csv") {
+		fileName = fileName + ".csv"
+	} else if strings.HasSuffix(fileName, ".json") {
+		fileName = strings.TrimSuffix(fileName, ".json")
+		fileName = fileName + ".csv"
+	}
+
+	writeFile(fileName, fileContent)
+}
+
+func generateSubStatsForMergedCSV(index int, s *statistics, columnKey string, columns map[string]*csvColumn) map[string]*csvColumn {
+	if columns[columnKey] == nil {
+		columns[columnKey] = &csvColumn{
+			key:         columnKey,
+			displayName: s.name,
+			values:      map[int]string{},
+		}
+	}
+
+	columns[columnKey].values[index] = fmt.Sprintf("%d", s.automationUnits)
+
+	for keptnServiceName, keptnServiceExecution := range s.keptnServiceExecutions {
+		for eventType, executions := range keptnServiceExecution.eventTypeCount {
+			executionColumnKey := columnKey + "-executions-" + keptnServiceName + "-" + eventType
+			if columns[executionColumnKey] == nil {
+				columns[executionColumnKey] = &csvColumn{
+					key:         executionColumnKey,
+					displayName: fmt.Sprintf("%s (%s)", keptnServiceName, eventType),
+					values:      map[int]string{},
+				}
+			}
+			columns[executionColumnKey].values[index] = fmt.Sprintf("%d", executions)
+		}
+	}
+
+	return columns
+}
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 func exportToCSV(s *statisticsOutput, index int) {
 	headers := []string{}
 	values := []string{}
@@ -392,17 +635,26 @@ func createAggregatedStatistics(statisticsFiles map[string]*stats.GetStatisticsR
 		perProjectStatistics: map[string]*statistics{},
 	}
 
+<<<<<<< HEAD
 	to, from := getTimeFrame(statisticsFiles)
+=======
+	from, to := getTimeFrame(statisticsFiles)
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 	statsOutput.from = from
 	statsOutput.to = to
 
 	for _, stats := range statisticsFiles {
+<<<<<<< HEAD
 		mergeStatisticsResponseIntoStatisticsOutput(stats, statsOutput)
+=======
+		mergeStatisticsResponseIntoStatisticsOutput(stats, statsOutput, 0)
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 	}
 
 	return []*statisticsOutput{statsOutput}
 }
 
+<<<<<<< HEAD
 func createSeparatedStatistics(statisticsFiles map[string]*stats.GetStatisticsResponse) []*statisticsOutput {
 	result := []*statisticsOutput{}
 
@@ -410,6 +662,36 @@ func createSeparatedStatistics(statisticsFiles map[string]*stats.GetStatisticsRe
 		newSeparateOutput := &statisticsOutput{
 			overallStatistics: statistics{
 				name:                   "Overall: " + fileName + " > Keptn",
+=======
+func addColumn(key, displayname string) {
+
+	for _, col := range csvColumns {
+		if col.key == key {
+			return
+		}
+	}
+	csvColumns = append(csvColumns, csvColumn{
+		key:         key,
+		displayName: displayname,
+		values:      nil,
+	})
+	csvColumnMapping[key] = columnIndex
+	columnIndex = columnIndex + 1
+
+	for index, _ := range csvRows {
+		csvRows[index] = append(csvRows[index], "")
+	}
+}
+
+func createSeparatedStatistics(statisticsFiles map[string]*stats.GetStatisticsResponse) []*statisticsOutput {
+	result := []*statisticsOutput{}
+
+	index := 0
+	for _, stats := range statisticsFiles {
+		newSeparateOutput := &statisticsOutput{
+			overallStatistics: statistics{
+				name:                   "Overall: > Keptn",
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 				automationUnits:        0,
 				keptnServiceExecutions: map[string]*keptnServiceExecution{},
 				triggers:               0,
@@ -420,27 +702,49 @@ func createSeparatedStatistics(statisticsFiles map[string]*stats.GetStatisticsRe
 			from:                 stats.From,
 			to:                   stats.To,
 		}
+<<<<<<< HEAD
 		mergeStatisticsResponseIntoStatisticsOutput(stats, newSeparateOutput)
 		result = append(result, newSeparateOutput)
+=======
+
+		mergeStatisticsResponseIntoStatisticsOutput(stats, newSeparateOutput, index)
+		result = append(result, newSeparateOutput)
+		index = index + 1
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 	}
 	return result
 }
 
+<<<<<<< HEAD
 func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsResponse, statsOutput *statisticsOutput) {
+=======
+func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsResponse, statsOutput *statisticsOutput, rowIndex int) {
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 	for _, project := range stats.Projects {
 		if len(excludeProjectsArr) > 0 && contains(excludeProjectsArr, project.Name) {
 			continue
 		}
+<<<<<<< HEAD
 		if isProjectGranularity() {
 			if statsOutput.perProjectStatistics[project.Name] == nil {
 				statsOutput.perProjectStatistics[project.Name] = &statistics{
 					name:                   "Project: Keptn > " + project.Name,
+=======
+
+		_, projectOverallDisplayName := getProjectColNames(project.Name)
+
+		if isProjectGranularity() {
+			if statsOutput.perProjectStatistics[project.Name] == nil {
+				statsOutput.perProjectStatistics[project.Name] = &statistics{
+					name:                   projectOverallDisplayName,
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 					automationUnits:        0,
 					keptnServiceExecutions: map[string]*keptnServiceExecution{},
 					triggers:               0,
 					triggersByType:         map[string]*triggerExecution{},
 					subStatistics:          map[string]*statistics{},
 				}
+<<<<<<< HEAD
 			}
 		}
 		for _, svc := range project.Services {
@@ -451,6 +755,19 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 				if statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name] == nil {
 					statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name] = &statistics{
 						name:                   "Service: Keptn > " + project.Name + " > " + svc.Name,
+=======
+
+			}
+		}
+		for _, svc := range project.Services {
+
+			_, serviceOverallDisplayName := getServiceColNames(project.Name, svc.Name)
+
+			if isServiceGranularity() {
+				if statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name] == nil {
+					statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name] = &statistics{
+						name:                   serviceOverallDisplayName,
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 						automationUnits:        0,
 						keptnServiceExecutions: map[string]*keptnServiceExecution{},
 						triggers:               0,
@@ -460,7 +777,16 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 				}
 			}
 			for _, execution := range svc.KeptnServiceExecutions {
+<<<<<<< HEAD
 				for _, eventTypeExecution := range execution.Executions {
+=======
+
+				if len(includeServicesArr) > 0 && !contains(includeServicesArr, execution.Name) {
+					continue
+				}
+				for _, eventTypeExecution := range execution.Executions {
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 					if len(includeEventsArr) > 0 && !contains(includeEventsArr, eventTypeExecution.Type) {
 						continue
 					}
@@ -471,6 +797,10 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 							eventTypeCount: map[string]int{},
 						}
 					}
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 					statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] =
 						statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] + eventTypeExecution.Count
 
@@ -493,6 +823,10 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 									eventTypeCount: map[string]int{},
 								}
 							}
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcd3dabdaca813ba7fc01d45ee1858ce9ff629e3
 							statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name].keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] =
 								statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name].keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] + eventTypeExecution.Count
 						}
