@@ -714,6 +714,7 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 							eventTypeCount: map[string]int{},
 						}
 					}
+
 					statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] =
 						statsOutput.overallStatistics.keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] + eventTypeExecution.Count
 
@@ -736,6 +737,7 @@ func mergeStatisticsResponseIntoStatisticsOutput(stats *stats.GetStatisticsRespo
 									eventTypeCount: map[string]int{},
 								}
 							}
+
 							statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name].keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] =
 								statsOutput.perProjectStatistics[project.Name].subStatistics[svc.Name].keptnServiceExecutions[execution.Name].eventTypeCount[eventTypeExecution.Type] + eventTypeExecution.Count
 						}
