@@ -112,15 +112,19 @@ Flags:
   -h, --help                     help for keptn-usage-stats
       --includeEvents string     List of events that define an automation unit, default is 'all' (default "all")
       --includeServices string   List of Services that define an automation unit, default is 'all' (default "all")
-      --includeTriggers string   list of sequence triggers: [configuration-change, problem.open, evaluation-started] (default "all")
-  -o, --output string            The Name of the output file (default "stats")
+      --includeTriggers string   List of sequence triggers: [configuration-change, problem.open, evaluation-started] - supported with Keptn >0.8 (default "all")
+  -o, --output string            The name of the output file (default "stats")
   -p, --period string            The period under consideration, one option of: [separated, aggregated] (default "separated")
       --separator string         The separator used for the CSV exporter, allowed values are ',' or ';' (default ",")
 ```
 
+**Note:** The `--includeTriggers` flag is not supported yet, but will be implemented with Keptn 0.8. 
+
 ### Examples
 
-The following command will create a CSV file for each of the statistics files located in the directory `./example_payloads`:
+#### Example A
+
+The following command will create a single CSV file with a row for each statistics files located in the directory `./example_payloads`:
 
 ```
 $ keptn-usage-stats --folder=./example_payloads --granularity=service --export=csv --period=separated
@@ -178,20 +182,17 @@ Service: Keptn > my-project > users
 
 The resulting CSV files will look as follows:
 
-**stats_1.csv**
+**stats.csv**
 ```
-Timeframe,Overall: stats1.json > Keptn,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished),Project: Keptn > sockshop,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished),Service: Keptn > sockshop > carts,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished)
-2020-09-21 02:41:45 +0000 UTC - 2020-09-23 14:02:42 +0000 UTC,3,1,1,1,3,1,1,1,3,1,1,1
+Timeframe,Overall: Keptn,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),helm-service (sh.keptn.event.deployment.finished),argo-service (sh.keptn.event.deployment.finished),Project: Keptn > sockshop,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished),Service: Keptn > sockshop > carts,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished),Project: Keptn > my-project,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished),Service: Keptn > my-project > users,argo-service (sh.keptn.event.deployment.finished),gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered)
+2020-09-21 02:41:45 +0000 UTC - 2020-09-23 14:02:42 +0000 UTC,3,1,1,1,,3,1,1,1,3,1,1,1,,,,,,,,
+2020-06-21 02:41:45 +0000 UTC - 2020-06-23 14:02:42 +0000 UTC,3,1,1,,1,,,,,,,,,3,1,1,1,3,1,1,1
+
 ```
 
-**stats_2.csv**
-```
-Timeframe,Overall: stats2.json > Keptn,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),argo-service (sh.keptn.event.deployment.finished),Project: Keptn > my-project,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),argo-service (sh.keptn.event.deployment.finished),Service: Keptn > my-project > users,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),argo-service (sh.keptn.event.deployment.finished)
-2020-06-21 02:41:45 +0000 UTC - 2020-06-23 14:02:42 +0000 UTC,3,1,1,1,3,1,1,1,3,1,1,1
-```
+#### Example B
 
-
-If both files should be **combined into one csv file** the `--period=aggregated` flag can be used:
+If both files should be **combined into one row (of a CSV)** the `--period=aggregated` flag can be used:
 
 ```
 $ keptn-usage-stats --folder=./example_payloads --granularity=service --export=csv --period=aggregated
@@ -241,8 +242,8 @@ Service: Keptn > sockshop > carts
 
 **stats.csv**
 ```
-Timeframe,Overall: Keptn,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished),helm-service (sh.keptn.event.deployment.finished),Project: Keptn > my-project,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished),Service: Keptn > my-project > users,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished),Project: Keptn > sockshop,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),helm-service (sh.keptn.event.deployment.finished),Service: Keptn > sockshop > carts,gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),helm-service (sh.keptn.event.deployment.finished)
-2020-09-23 14:02:42 +0000 UTC - 2020-06-21 02:41:45 +0000 UTC,6,2,2,1,1,3,1,1,1,3,1,1,1,3,1,1,1,3,1,1,1
+Timeframe,Overall: Keptn,helm-service (sh.keptn.event.deployment.finished),argo-service (sh.keptn.event.deployment.finished),gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),Project: Keptn > sockshop,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),helm-service (sh.keptn.event.deployment.finished),Service: Keptn > sockshop > carts,helm-service (sh.keptn.event.deployment.finished),gatekeeper-service (sh.keptn.event.approval.triggered),gatekeeper-service (sh.keptn.event.approval.finished),Project: Keptn > my-project,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished),Service: Keptn > my-project > users,gatekeeper-service (sh.keptn.event.approval.finished),gatekeeper-service (sh.keptn.event.approval.triggered),argo-service (sh.keptn.event.deployment.finished)
+2020-06-21 02:41:45 +0000 UTC - 2020-09-23 14:02:42 +0000 UTC,6,1,1,2,2,3,1,1,1,3,1,1,1,3,1,1,1,3,1,1,1
 ```
 
 
