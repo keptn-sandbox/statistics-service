@@ -185,7 +185,6 @@ func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
 						target.IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName, eventType, count)
 					}
 				}
-				target.IncreaseExecutedSequencesCount(projectName, serviceName, service.ExecutedSequences)
 				for eventType, sequenceExecutions := range service.ExecutedSequencesPerType {
 					target.IncreaseExecutedSequenceCountForType(projectName, serviceName, eventType, sequenceExecutions)
 				}
