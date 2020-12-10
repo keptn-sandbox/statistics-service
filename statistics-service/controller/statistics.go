@@ -2,9 +2,9 @@ package controller
 
 import (
 	"fmt"
-	"github.com/keptn-sandbox/statistics-service/config"
-	"github.com/keptn-sandbox/statistics-service/db"
-	"github.com/keptn-sandbox/statistics-service/operations"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/config"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/db"
+	"github.com/keptn-sandbox/statistics-service/statistics-service/operations"
 	keptn "github.com/keptn/go-utils/pkg/lib"
 	"strings"
 	"sync"
