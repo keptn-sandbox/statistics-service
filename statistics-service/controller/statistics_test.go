@@ -221,8 +221,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 						Name: "my-project",
 						Services: map[string]*operations.Service{
 							"my-service": {
-								Name:              "my-service",
-								ExecutedSequences: 1,
+								Name: "my-service",
 								Events: map[string]int{
 									"my-type": 1,
 								},
@@ -234,6 +233,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 										},
 									},
 								},
+								ExecutedSequencesPerType: map[string]int{},
 							},
 						},
 					},
@@ -255,8 +255,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 							Name: "my-project",
 							Services: map[string]*operations.Service{
 								"my-service": {
-									Name:              "my-service",
-									ExecutedSequences: 1,
+									Name: "my-service",
 									Events: map[string]int{
 										"my-type": 1,
 									},
@@ -268,6 +267,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 											},
 										},
 									},
+									ExecutedSequencesPerType: map[string]int{},
 								},
 							},
 						},
@@ -298,8 +298,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 						Name: "my-project",
 						Services: map[string]*operations.Service{
 							"my-service": {
-								Name:              "my-service",
-								ExecutedSequences: 2,
+								Name: "my-service",
 								Events: map[string]int{
 									"my-type": 2,
 								},
@@ -311,6 +310,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 										},
 									},
 								},
+								ExecutedSequencesPerType: map[string]int{},
 							},
 						},
 					},
@@ -332,11 +332,11 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 							Name: "my-project",
 							Services: map[string]*operations.Service{
 								"my-service": {
-									Name:              "my-service",
-									ExecutedSequences: 1,
+									Name: "my-service",
 									Events: map[string]int{
 										"my-type": 1,
 									},
+									ExecutedSequencesPerType: map[string]int{},
 								},
 							},
 						},
@@ -369,8 +369,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 						Name: "my-project",
 						Services: map[string]*operations.Service{
 							"my-service": {
-								Name:              "my-service",
-								ExecutedSequences: 1,
+								Name: "my-service",
 								Events: map[string]int{
 									"my-type": 2,
 								},
@@ -382,6 +381,7 @@ func Test_statisticsBucket_AddEvent(t *testing.T) {
 										},
 									},
 								},
+								ExecutedSequencesPerType: map[string]int{},
 							},
 						},
 					},
@@ -436,8 +436,7 @@ func TestStatisticsBucket(t *testing.T) {
 				Name: "my-project",
 				Services: map[string]*operations.Service{
 					"my-service": {
-						Name:              "my-service",
-						ExecutedSequences: 2,
+						Name: "my-service",
 						Events: map[string]int{
 							"my-type":   2,
 							"my-type-2": 1,
@@ -457,6 +456,7 @@ func TestStatisticsBucket(t *testing.T) {
 								},
 							},
 						},
+						ExecutedSequencesPerType: map[string]int{},
 					},
 				},
 			},
