@@ -38,6 +38,8 @@ type GetStatisticsResponseService struct {
 	Events []GetStatisticsResponseEvent `json:"events" bson:"events"`
 	// KeptnServiceExecutions godoc
 	KeptnServiceExecutions []GetStatisticsResponseKeptnService `json:"keptnServiceExecutions" bson:"keptnServiceExecutions"`
+	// ExecutedSequencesPerType godoc
+	ExecutedSequencesPerType []GetStatisticsResponseEvent `json:"executedSequencesPerType,omitempty" bson:"executedSequencesPerType"`
 }
 
 // GetStatisticsResponseEvent godoc+
@@ -80,6 +82,8 @@ type Service struct {
 	Name string `json:"name" bson:"name"`
 	// ExecutedSequences godoc
 	ExecutedSequences int `json:"executedSequences" bson:"executedSequences"`
+	// ExecutedSequencesPerType godoc
+	ExecutedSequencesPerType map[string]int `json:"executedSequencesPerType" bson:"executedSequencesPerType"`
 	// Events godoc
 	Events map[string]int `json:"events" bson:"events"`
 	// KeptnServiceExecutions godoc
@@ -101,10 +105,11 @@ func (s *Statistics) ensureProjectAndServiceExist(projectName string, serviceNam
 	}
 	if s.Projects[projectName].Services[serviceName] == nil {
 		s.Projects[projectName].Services[serviceName] = &Service{
-			Name:                   serviceName,
-			ExecutedSequences:      0,
-			Events:                 map[string]int{},
-			KeptnServiceExecutions: map[string]*KeptnService{},
+			Name:                     serviceName,
+			ExecutedSequences:        0,
+			ExecutedSequencesPerType: map[string]int{},
+			Events:                   map[string]int{},
+			KeptnServiceExecutions:   map[string]*KeptnService{},
 		}
 	}
 }
@@ -156,6 +161,13 @@ func (s *Statistics) IncreaseKeptnServiceExecutionCount(projectName, serviceName
 	keptnService.Executions[eventType] = keptnService.Executions[eventType] + increment
 }
 
+// IncreaseExecutedSequenceCountForType godoc
+func (s *Statistics) IncreaseExecutedSequenceCountForType(projectName string, serviceName string, eventType string, increment int) {
+	s.ensureProjectAndServiceExist(projectName, serviceName)
+	service := s.Projects[projectName].Services[serviceName]
+	service.ExecutedSequencesPerType[eventType] = service.ExecutedSequencesPerType[eventType] + increment
+}
+
 // MergeStatistics godoc
 func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
 	for _, stats := range statistics {
@@ -172,6 +184,9 @@ func MergeStatistics(target Statistics, statistics []Statistics) Statistics {
 					for eventType, count := range keptnService.Executions {
 						target.IncreaseKeptnServiceExecutionCount(projectName, serviceName, keptnServiceName, eventType, count)
 					}
+				}
+				for eventType, sequenceExecutions := range service.ExecutedSequencesPerType {
+					target.IncreaseExecutedSequenceCountForType(projectName, serviceName, eventType, sequenceExecutions)
 				}
 			}
 		}

@@ -74,13 +74,10 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 		return
 	}
 	sb.logger.Info("updating statistics for service " + event.Data.Service + " in project " + event.Data.Project)
-	increaseExecutedSequences := !sb.uniqueSequences[event.Shkeptncontext]
 	sb.uniqueSequences[event.Shkeptncontext] = true
 
 	sb.Statistics.IncreaseEventTypeCount(event.Data.Project, event.Data.Service, event.Type, 1)
-	if increaseExecutedSequences {
-		sb.Statistics.IncreaseExecutedSequencesCount(event.Data.Project, event.Data.Service, 1)
-	}
+
 	if sb.nextGenEvents {
 		// increase service execution count using .started events
 		if strings.HasSuffix(event.Type, ".started") {
@@ -90,6 +87,11 @@ func (sb *statisticsBucket) AddEvent(event operations.Event) {
 				event.Source,
 				strings.TrimSuffix(event.Type, ".started"), 1,
 			)
+		}
+		if strings.HasSuffix(event.Type, ".finished") && event.Source == "shipyard-controller" {
+			// when the shipyard controller sends a .finished event, this means that a task sequence has been completed
+			sb.Statistics.IncreaseExecutedSequencesCount(event.Data.Project, event.Data.Service, 1)
+			sb.Statistics.IncreaseExecutedSequenceCountForType(event.Data.Project, event.Data.Service, strings.TrimSuffix(event.Type, ".finished"), 1)
 		}
 	} else {
 		// increase service execution count using 'source' property from event
